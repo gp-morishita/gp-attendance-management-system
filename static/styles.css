@@ -1,0 +1,145 @@
+@charset "utf-8";
+
+
+
+
+body {
+}
+
+.header {
+}
+
+.footer {
+background: #CBE8FA;
+}
+
+
+.prompt_message_text {
+font-size: 20px;
+color: white;
+background: black;
+}
+
+.logout_message_text {
+color: white;
+font-size: 16px;
+text-align: center;
+background: midnightblue;
+}
+
+.signout_message_text {
+color: white;
+font-size: 16px;
+text-align: center;
+background: midnightblue;
+}
+
+.caution_message_text {
+color: white;
+font-size: 16px;
+text-align: center;
+background: darkorange;
+}
+
+
+.user_balloon__for_text {
+position: absolute;
+top:  560px;
+left: 740px;
+display: inline-block;
+margin:  14em 0;
+padding: 10px 10px;
+min-width: 120px;
+max-width: 50%;
+color: #555;
+font-size: 16px;
+background: #8EB8FF;
+border-radius: 15px;
+border: 1px solid;
+border-color: black;
+}
+
+.user_balloon__for_image {
+position: absolute;
+top:  4400px;
+left: 740px;
+display: inline-block;
+margin: 0 auto;
+padding: 10px 10px;
+text-align: center;
+min-width: 120px;
+max-width: 50%;
+color: #555;
+font-size: 16px;
+background: #8EB8FF;
+border-radius: 15px;
+border: 1px solid;
+border-color: black;
+}
+
+.bot_balloon__for_text {
+position: relative;
+left: 50px;
+display: inline-block;
+margin: 10em 0;
+padding: 10px 10px;
+min-width: 120px;
+max-width: 50%;
+color: #555;
+font-size: 16px;
+background: #FF97C2;
+border-radius: 15px;
+border: 1px solid;
+border-color: black;
+}
+
+.bot_balloon__for_image {
+position: relative;
+left: 50px;
+display: inline-block;
+margin: 0 auto;
+padding: 10px 10px;
+text-align: center;
+min-width: 120px;
+max-width: 50%;
+color: #555;
+font-size: 16px;
+background: #FF97C2;
+border-radius: 15px;
+border: 1px solid;
+border-color: black;
+}
+
+
+.chracter_image {
+position: relative;
+border: 2px solid;
+border-color: black;
+border-radius: 50%;
+width:  300px;
+height: 300px;
+}
+
+
+.origin_image {
+position: relative;
+border: 0px solid;
+border-color: black;
+border-radius: 0%;
+width:  300px;
+height: 300px;
+}
+
+.generated_image {
+position: relative;
+border: 0px solid;
+border-color: black;
+border-radius: 0%;
+width:  300px;
+height: 300px;
+}
+
+
+br {
+visibility: hidden;
+}
