@@ -20,6 +20,12 @@ import module
 
 
 
+#管理者用パスワード
+ADMIN_PASSWORD = "secret"
+
+
+
+
 #Flask本体を構築する
 app = flask.Flask(__name__, static_folder="static", template_folder="templates")
 
@@ -34,14 +40,69 @@ app.config["SECRET_KEY"] = "python_flask_chatbot__session_secret_key"
 
 
 #「index」のURLURLエンドポイントを定義する
-@app.route("/",      methods=["GET"])
-@app.route("/index", methods=["GET"])
+@app.route("/",      methods=["GET", "POST"])
+@app.route("/index", methods=["GET", "POST"])
 def index():
+    row_num = 0
+
 
     session.clear()
 
 
-    return render_template("index.html")
+    if   request.method == "POST":
+
+         conn = sqlite3.connect("app_usrs.db")
+         cur  = conn.cursor()
+
+         sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, ml_addr TEXT NOT NULL, psswrd TEXT NOT NULL);"""
+         cur.execute(sql1)
+         conn.commit()
+
+
+         sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
+         cur.execute(sql2, [request.form["username"]])
+
+         for row in cur.fetchall():
+             row_num = row_num + 1
+
+         if row_num == 0:
+            cur.close()
+            conn.close()
+
+            flash("そのユーザー名は登録されていません！")
+
+            return render_template("index.html")
+
+
+         sql3 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
+         cur.execute(sql3, [request.form["password"]])
+
+         for row in cur.fetchall():
+             if row != request.form["password"]:
+                cur.close()
+                conn.close()
+
+                flash("そのパスワードは間違っています！")
+
+                return render_template("index.html")
+
+
+         cur.close()
+         conn.close()
+
+
+         session["user_name"] = request.form["username"]
+         session["logged_in"] = True
+         app.permanent_session_lifetime = timedelta(minutes=30)
+
+
+         return redirect(url_for("prompt"))
+
+
+    else:
+
+         return render_template("index.html")
 
 
 
@@ -232,6 +293,33 @@ def login():
     else:
 
          return render_template("login.html")
+
+
+
+
+
+#「admin_login」のURLエンドポイントを定義する
+@app.route("/admin_login", methods=["GET", "POST"])
+def admin_login():
+
+    if   request.method == "POST":
+
+         if ADMIN_PASSWORD != request.form["password"]:
+
+             flash("そのパスワードは間違っています")
+
+             return render_template("admin_login.html")
+
+
+         session["is_admin"]  = True
+         session["logged_in"] = True
+         app.permanent_session_lifetime = timedelta(minutes=30)
+
+         return redirect(url_for("admin_prompt"))
+
+    else:
+
+         return render_template("admin_login.html")
 
 
 
@@ -462,9 +550,13 @@ def prompt():
 
     if request.method == "POST":
 
-       if ("logged_in" not in session and session["logged_in"] == False):
+       if  "logged_in" not in session:
 
-           return redirect(url_for("login"))
+            return redirect(url_for("login"))
+
+       elif session["logged_in"] == False:
+
+            return redirect(url_for("login"))
 
 
        orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst = module.analyze_text(request.form["sent_msg_txt"])
@@ -475,8 +567,7 @@ def prompt():
        gnrtd_img_pth = module.generate_image_file(gnrtd_img, "(A)")
        cntxt, tpc, usr_info, uttrnc_mdl = module.inference_and_speculate(orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst, anlyzd_img, img_ttl, img_dscrptn)
        gnrtd_txts  = module.generate_text(orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst, cntxt, tpc, usr_info, uttrnc_mdl)
-       lrnng_rslts = module.learning(orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst, cntxt, tpc, usr_info, uttrnc_mdl, gnrtd_img_pth, img_ttl, img_dscrptn)
-
+       
        session["origin_texts"]         = orign_txts
        session["generated_texts"]      = gnrtd_txts
        session["text_mean"]            = txt_mean
@@ -535,7 +626,8 @@ def prompt():
        cur  = conn.cursor()
 
 
-       sql5 = """CREATE TABLE IF NOT EXISTS messages (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, usr_nm TEXT NOT NULL, tm_stmp TEXT NOT NULL, orign_txts TEXT NOT NULL, gnrtd_txts TEXT NOT NULL);"""
+       sql5 = """CREATE TABLE IF NOT EXISTS messages (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                 usr_nm TEXT NOT NULL, tm_stmp TEXT NOT NULL, orign_txts TEXT NOT NULL, gnrtd_txts TEXT NOT NULL);"""
        cur.execute(sql5)
        conn.commit()
 

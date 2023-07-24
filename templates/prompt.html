@@ -4,34 +4,57 @@
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="主にPythonとJanome等を使って実装・開発しています。来年の完成を目指して鋭意製作中です。">
-<title>original-chatbot</title>
+<meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
+<title>gp-attendance-management-system</title>
 <link rel="shortcut icon" type="image/x-icon" href="{{url_for("static", filename="favicon.ico")}}">
 <link rel="stylesheet" type="text/css" href="{{url_for("static", filename="styles.css")}}">
 <link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/bootstrap.css")}}">
 <link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/sticky-footer.css")}}">
+<style type="text/css">
+.login-form {
+width: 340px;
+margin: 50px auto;
+}
+.login-form form {
+background: #f7f7f7;
+box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+padding: 24px;
+border-radius: 16px;
+}
+.login-form h2 {
+margin: 0 0 15px;
+}
+.form-control, .btn {
+min-height: 38px;
+border-radius: 4px;
+}
+.btn {        
+font-size: 15px;
+font-weight: bold;
+}
+
+.login-form p {
+background: #f7f7f7;
+box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+padding: 24px;
+border-radius: 16px;
+}
+
+
+.dakoku {
+margin: 0 auto;
+}
+</style>
 </head>
 <body background="{{url_for("static", filename="prompt.jpg")}}">
 <header class="header">
 <nav class="navbar navbar-expand-sm navbar-dark bg-success">
-<a class="navbar-brand" href="{{url_for("logout")}}">original-chatbot</a>
+<a class="navbar-brand" href="{{url_for("logout")}}">gp-attendance-management-system</a>
 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav4" aria-controls="navbarNav4" aria-expanded="false" aria-label="Toggle navigation">
 <span class="navbar-toggler-icon"></span>
 </button>
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
-<li class="nav-item">
-<a class="nav-link" href="{{url_for("show_users")}}">ユーザー</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for("show_messages")}}">メッセージ</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for("show_images")}}">画像</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for("show_results")}}">解析結果</a>
-</li>
 <li class="nav-item">
 <a class="nav-link" href="{{url_for("logout")}}">ログアウト</a>
 </li>
@@ -41,40 +64,32 @@
 </header>
 <br>
 <br>
-<p class="prompt_message_text">>hello!&nbsp;&nbsp;&nbsp;&nbsp;{{user_name}}さん.</p>
+<p class="prompt_message_text">hello!&nbsp;&nbsp;&nbsp;&nbsp;{{user_name}}さん.</p>
 <br>
-<form method="post" enctype="multipart/form-data">
-<div class="form-group">
-<input type="text" class="form-control" name="sent_msg_txt" required>
-<br>
-<br>
-<br>
-<input type="file" class="form-control" name="sent_msg_img" accept="image/*" required>
-<br>
-<br>
-<br>
-<input type="submit" class="btn btn-primary" value="メッセージを送る">
+<div class="login-form">
+<div class="dakoku">
+<p id="RealtimeClockArea2" style="text-align: center;">00:00:00</p>
 </div>
+</div>
+<br>
+<div class="login-form">
+<form method="post">
+<table class="dakoku">
+<tr>
+<td><input type="submit" class="btn btn-primary" value="出勤"></td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td><input type="submit" class="btn btn-primary" value="退勤"></td>
+</tr>
+</table>
 </form>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
+</div>
 <br>
 <br>
 <br>
 <br>
 <footer class="footer">
 <div class="container text-center">
-<p class="text-muted">Copyright &copy; 2023  moriaki1983  All rights reserved.</p>
+<p class="text-muted">Copyright &copy; 2023  GIFT-PLACE  All rights reserved.</p>
 </div>
 </footer>
 <script type="text/javascript" src="{{url_for("static", filename="jquery/jquery-3.6.4.js")}}"></script>
@@ -83,6 +98,23 @@
 var btn=$('.footer');
 $(window).scroll(function(){if ($(this).scrollTop() > 80){btn.fadeIn();} else {btn.fadeOut();}});
 btn.click(function(){$('body,html').animate({scrollTop: 0},500); return false;});
+</script>
+<script type="text/javascript">
+function set2fig(num) {
+var ret;
+if( num < 10 ) { ret = "0" + num; }
+else { ret = num; }
+return ret;
+}
+function showClock2() {
+var nowTime = new Date();
+var nowHour = set2fig( nowTime.getHours() );
+var nowMin  = set2fig( nowTime.getMinutes() );
+var nowSec  = set2fig( nowTime.getSeconds() );
+var msg = "現在時刻は、" + nowHour + ":" + nowMin + ":" + nowSec + " です。";
+document.getElementById("RealtimeClockArea2").innerHTML = msg;
+}
+setInterval('showClock2()',1000);
 </script>
 </body>
 </html>

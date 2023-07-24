@@ -3,12 +3,6 @@
 
 
 
-body {
-}
-
-.header {
-}
-
 .footer {
 background: #CBE8FA;
 }
@@ -17,6 +11,7 @@ background: #CBE8FA;
 .prompt_message_text {
 font-size: 20px;
 color: white;
+text-align: center;
 background: black;
 }
 
