@@ -37,6 +37,7 @@ font-weight: bold;
 <body background="{{url_for("static", filename="index.jpg")}}">
 <header class="header">
 <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+
 <a class="navbar-brand" href="{{url_for("index")}}">gp-attendance-management-system</a>
 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav4" aria-controls="navbarNav4" aria-expanded="false" aria-label="Toggle navigation">
 <span class="navbar-toggler-icon"></span>
@@ -44,7 +45,7 @@ font-weight: bold;
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
-<a class="nav-link" href="{{url_for("index")}}">トップ<span class="sr-only">(current)</span></a>
+<a class="nav-link" href="{{url_for("index")}}">トップ(一般ログイン)<span class="sr-only">(current)</span></a>
 </li>
 <li class="nav-item">
 <a class="nav-link" href="{{url_for("usage")}}">使い方</a>
@@ -59,9 +60,6 @@ font-weight: bold;
 <a class="nav-link" href="{{url_for("signout")}}">サインアウト</a>
 </li>
 <li class="nav-item">
-<a class="nav-link" href="{{url_for("login")}}">ログイン</a>
-</li>
-<li class="nav-item">
 <a class="nav-link" href="{{url_for("admin_login")}}">管理者ログイン</a>
 </li>
 </ul>
@@ -70,7 +68,7 @@ font-weight: bold;
 </header>
 <div class="login-form">
 <form method="post">
-<h2 class="text-center">ログイン</h2>
+<h2 class="text-center">一般ログイン</h2>
 <div class="form-group">
 <input type="text" class="form-control" placeholder="ユーザー名" required="required" name="username">
 </div>
@@ -93,10 +91,6 @@ font-weight: bold;
 {% endfor %}
 {% endif %}
 {% endwith %}
-<br>
-<br>
-<br>
-<br>
 <br>
 <br>
 <br>

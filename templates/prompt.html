@@ -68,7 +68,7 @@ margin: 0 auto;
 <br>
 <div class="login-form">
 <div class="dakoku">
-<p id="RealtimeClockArea2" style="text-align: center;">00:00:00</p>
+<p id="RealtimeClockArea2" style="text-align: center;">現在時刻は、--:--:-- です。</p>
 </div>
 </div>
 <br>
@@ -76,17 +76,20 @@ margin: 0 auto;
 <form method="post">
 <table class="dakoku">
 <tr>
-<td><input type="submit" class="btn btn-primary" value="出勤"></td>
+<td><input name="syutaikin" type="submit" class="btn btn-primary btn-block" value="出勤"></td>
 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td><input type="submit" class="btn btn-primary" value="退勤"></td>
+<td><input name="syutaikin" type="submit" class="btn btn-primary btn-block" value="退勤"></td>
 </tr>
 </table>
 </form>
 </div>
-<br>
-<br>
-<br>
-<br>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p class="caution_message_text">{{message}}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <footer class="footer">
 <div class="container text-center">
 <p class="text-muted">Copyright &copy; 2023  GIFT-PLACE  All rights reserved.</p>

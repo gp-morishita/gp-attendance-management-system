@@ -14,10 +14,6 @@ from flask import Flask, render_template, request, url_for, redirect, session, f
 from flask_paginate import Pagination, get_page_parameter
 
 
-#独自のモジュールをインポートする
-import module
-
-
 
 
 #管理者用パスワード
@@ -329,10 +325,12 @@ def admin_login():
 def logout():
 
     session.clear()
+
     flash("ログアウトしました")
 
 
     return render_template("logout.html")
+
 
 
 
@@ -559,120 +557,27 @@ def prompt():
             return redirect(url_for("login"))
 
 
-       orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst = module.analyze_text(request.form["sent_msg_txt"])
-       orign_img = module.restoration_image_from_datastream(request.files["sent_msg_img"].stream)
-       anlyzd_img, img_ttl, img_dscrptn = module.analyze_image(orign_img)
-       gnrtd_img                        = module.generate_image(anlyzd_img)
-       orign_img_pth = module.generate_image_file(orign_img, "(O)")
-       gnrtd_img_pth = module.generate_image_file(gnrtd_img, "(A)")
-       cntxt, tpc, usr_info, uttrnc_mdl = module.inference_and_speculate(orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst, anlyzd_img, img_ttl, img_dscrptn)
-       gnrtd_txts  = module.generate_text(orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst, cntxt, tpc, usr_info, uttrnc_mdl)
-       
-       session["origin_texts"]         = orign_txts
-       session["generated_texts"]      = gnrtd_txts
-       session["text_mean"]            = txt_mean
-       session["text_tokens"]          = txt_tkns
-       session["topic"]                = tpc
-       session["context"]              = cntxt
-       session["text_dijest"]          = txt_djst
-       session["text_sentiment"]       = txt_sntmnt
-       session["utterance_modal"]      = uttrnc_mdl
-       session["origin_image_path"]    = orign_img_pth
-       session["generated_image_path"] = gnrtd_img_pth
-       session["image_title"]          = img_ttl
+    if   request.form["syutaikin"] == "出勤":
+         flash("出勤時刻を記録しました")
 
+         return render_template("prompt.html", user_name=session["user_name"])
 
-       conn = sqlite3.connect("app_imgs.db")
-       cur  = conn.cursor()
+    if   request.form["syutaikin"] == "退勤":
+         flash("退勤時刻を記録しました")
 
-
-       sql1 = """CREATE TABLE IF NOT EXISTS images (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                    orign_img_pth TEXT NOT NULL, gnrtd_img_pth TEXT NOT NULL);"""
-       cur.execute(sql1)
-       conn.commit()
-
-
-       sql2 = """INSERT INTO images (orign_img_pth, gnrtd_img_pth) VALUES (?,?);"""
-       orign_img_flnm = orign_img_pth.replace("static", "")
-       gnrtd_img_flnm = gnrtd_img_pth.replace("static", "")
-       cur.execute(sql2, (orign_img_flnm, gnrtd_img_flnm))
-       conn.commit()
-
-
-       cur.close()
-       conn.close()
-
-
-       conn = sqlite3.connect("app_rslts.db")
-       cur  = conn.cursor()
-
-       sql3 = """CREATE TABLE IF NOT EXISTS results (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                     tpc TEXT NOT NULL, cntxt TEXT NOT NULL,
-                                                     txt_djst TEXT NOT NULL, txt_sntmnt TEXT NOT NULL, uttrnc_mdl TEXT NOT NULL);"""
-       cur.execute(sql3)
-       conn.commit()
-
-
-       sql4 = """INSERT INTO results (tpc, cntxt, txt_djst, txt_sntmnt, uttrnc_mdl) VALUES (?,?,?,?,?);"""
-       cur.execute(sql4, (tpc, cntxt, txt_djst, txt_sntmnt, uttrnc_mdl))
-       conn.commit()
-
- 
-       cur.close()
-       conn.close()
-
-
-       conn = sqlite3.connect("app_mssgs.db")
-       cur  = conn.cursor()
-
-
-       sql5 = """CREATE TABLE IF NOT EXISTS messages (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                 usr_nm TEXT NOT NULL, tm_stmp TEXT NOT NULL, orign_txts TEXT NOT NULL, gnrtd_txts TEXT NOT NULL);"""
-       cur.execute(sql5)
-       conn.commit()
-
-
-       sql6 = """INSERT INTO messages (usr_nm, tm_stmp, orign_txts, gnrtd_txts) VALUES (?,?,?,?);"""
-       crrnt_tm_in_asa_tky = datetime.datetime.now(pytz.timezone("Asia/Tokyo"))
-       cur.execute(sql6, (session["user_name"], crrnt_tm_in_asa_tky, orign_txts, gnrtd_txts))
-       conn.commit()
-
- 
-       cur.close()
-       conn.close()
-
-
-       conn = sqlite3.connect("app_cptns.db")
-       cur  = conn.cursor()
-
-
-       sql7 = """CREATE TABLE IF NOT EXISTS captions (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, img_cptns TEXT NOT NULL);"""
-       cur.execute(sql7)
-       conn.commit()
-
-
-       sql8 = """INSERT INTO captions (img_cptns) VALUES (?);"""
-       cur.execute(sql8, [img_ttl])
-       conn.commit()
-
- 
-       cur.close()
-       conn.close()
-
-
-       return redirect(url_for("reply"))
+         return render_template("prompt.html", user_name=session["user_name"])
 
 
 
 
-#「reply」のURLエンドポイントを定義する
-@app.route("/reply", methods=["GET"])
-def reply():
+#「admin_prompt」のURLエンドポイントを定義する
+@app.route("/admin_prompt", methods=["GET"])
+def admin_prompt():
 
     if request.method == "GET":
 
        if  "logged_in" not in session:
-            
+
             return redirect(url_for("login"))
 
        elif session["logged_in"] == False:
@@ -681,26 +586,7 @@ def reply():
 
        else:
 
-            if  "origin_texts" not in session:
-
-                 return redirect(url_for("prompt"))
-
-            else:
-
-                 return render_template("reply.html", \
-                                         origin_texts         = session["origin_texts"], \
-                                         generated_texts      = session["generated_texts"], \
-                                         text_mean            = session["text_mean"], \
-                                         text_tokens          = session["text_tokens"], \
-                                         topic                = session["topic"], \
-                                         context              = session["context"], \
-                                         text_dijest          = session["text_dijest"], \
-                                         text_sentiment       = session["text_sentiment"], \
-                                         utterance_modal      = session["utterance_modal"], \
-                                         origin_image_path    = session["origin_image_path"], \
-                                         generated_image_path = session["generated_image_path"], \
-                                         image_title          = session["image_title"])
-
+            return render_template("admin_prompt.html")
 
 
 
