@@ -67,18 +67,16 @@ margin: 0 auto;
 <p class="prompt_message_text">hello!&nbsp;&nbsp;&nbsp;&nbsp;{{user_name}}さん.</p>
 <br>
 <div class="login-form">
-<div class="dakoku">
-<p id="RealtimeClockArea2" style="text-align: center;">--:--:--</p>
-</div>
+<p id="RealtimeClockArea2" class="RealtimeClockArea2" style="text-align: center;">--:--:--</p>
 </div>
 <br>
 <div class="login-form">
 <form method="post">
-<table class="dakoku">
+<table align="center">
 <tr>
-<td><input name="syutaikin" type="submit" class="btn btn-primary btn-block" value="出勤"></td>
+<td><input name="attendance" type="submit" class="btn btn-primary btn-block" value="出勤"></td>
 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-<td><input name="syutaikin" type="submit" class="btn btn-primary btn-block" value="退勤"></td>
+<td><input name="attendance" type="submit" class="btn btn-primary btn-block" value="退勤"></td>
 </tr>
 </table>
 </form>
@@ -86,7 +84,7 @@ margin: 0 auto;
 {% with messages = get_flashed_messages() %}
 {% if messages %}
 {% for message in messages %}
-<p class="caution_message_text">{{message}}</p>
+<p class="flash_message_text">{{message}}</p>
 {% endfor %}
 {% endif %}
 {% endwith %}
@@ -95,7 +93,7 @@ margin: 0 auto;
 <p class="text-muted">Copyright &copy; 2023  GIFT-PLACE  All rights reserved.</p>
 </div>
 </footer>
-<script type="text/javascript" src="{{url_for('static'', filename='jquery/jquery-3.6.4.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='jquery/jquery-3.6.4.js')}}"></script>
 <script type="text/javascript" src="{{url_for('static', filename='bootstrap(popper_bundled)/js/bootstrap.bundle.js')}}"></script>
 <script type="text/javascript">
 var btn=$('.footer');
@@ -114,7 +112,7 @@ var nowTime = new Date();
 var nowHour = set2fig( nowTime.getHours() );
 var nowMin  = set2fig( nowTime.getMinutes() );
 var nowSec  = set2fig( nowTime.getSeconds() );
-var msg = "現在時刻は、" + nowHour + ":" + nowMin + ":" + nowSec + " です。";
+var msg = nowHour + ":" + nowMin + ":" + nowSec;
 document.getElementById("RealtimeClockArea2").innerHTML = msg;
 }
 setInterval('showClock2()',1000);

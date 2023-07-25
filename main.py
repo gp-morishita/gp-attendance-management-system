@@ -10,7 +10,7 @@ import sqlite3
 import datetime
 import pytz
 from datetime import timedelta
-from flask import Flask, render_template, request, url_for, redirect, session, flash, abort
+from flask import Flask, render_template, request, url_for, redirect, session, flash, send_file
 from flask_paginate import Pagination, get_page_parameter
 
 
@@ -19,6 +19,9 @@ from flask_paginate import Pagination, get_page_parameter
 #管理者用パスワードを宣言する
 ADMIN_PASSWORD = "secret"
 
+#ダウンロードファイルのパスを宣言する
+DOWNLOAD_PATH = "etc/export_attendance.csv"
+
 
 
 
@@ -26,7 +29,7 @@ ADMIN_PASSWORD = "secret"
 app = flask.Flask(__name__, static_folder="static", template_folder="templates")
 
 #セッションキーを設定する
-app.config["SECRET_KEY"] = "python_flask_chatbot__session_secret_key"
+app.config["SECRET_KEY"] = "python-flask-application__session-secret-key"
 
 
 
@@ -128,9 +131,9 @@ def about():
 
 
 
-#「signup」のURLエンドポイントを定義する
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
+#「signin」のURLエンドポイントを定義する
+@app.route("/signin", methods=["GET", "POST"])
+def signin():
 
     if request.method == "POST":
 
@@ -153,7 +156,7 @@ def signup():
               cur.close()
               conn.close()
 
-              return render_template("signup.html")
+              return render_template("signin.html")
 
 
        sql2 = """INSERT INTO users(usr_nm, psswrd) VALUES (?,?);"""
@@ -174,7 +177,7 @@ def signup():
     else:
 
 
-       return render_template("signup.html")
+       return render_template("signin.html")
 
 
 
@@ -342,7 +345,7 @@ def show_attendance():
 
 
        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                        usr_nm TEXT NOT NULL, bgn_dttm, end_dttm);"""
+                                                        usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
        cur.execute(sql1)
        conn.commit()
 
@@ -374,6 +377,7 @@ def show_attendance():
 @app.route("/export_to_csv", methods=["GET"])
 def export_to_csv():
     itms = []
+    spr_itms = []
 
 
     if request.method == "GET":
@@ -396,37 +400,56 @@ def export_to_csv():
        elif session["is_admin"] == False:
 
             return redirect(url_for("index"))
-       
-
-       conn = sqlite3.connect("app_tmm.db")
-       cur  = conn.cursor()
 
 
-       sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                        usr_nm TEXT NOT NULL, bgn_dttm TEXT, end_dttm TEXT);"""
-       cur.execute(sql1)
-       conn.commit()
+    try:
+        os.remove(DOWNLOAD_PATH)
+    except FileNotFoundError:
+        pass
 
 
-       sql2 = """SELECT * FROM attendance;"""
-       cur.execute(sql2)
+    conn = sqlite3.connect("app_tmm.db")
+    cur  = conn.cursor()
+
+
+    sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+    cur.execute(sql1)
+    conn.commit()
+
+
+    sql2 = """SELECT * FROM attendance;"""
+    cur.execute(sql2)
 
  
-       for row in cur.fetchall():
-           itms.append(row)
+    for row in cur.fetchall():
+        buf = str(row[0]) + ", " + row[1] + ", " + row[2] + ", " + row[3] +"\n"
+        spr_itms.append(buf)
 
 
-       cur.close()
-       conn.close()
+    cur.close()
+    conn.close()
 
 
-       per_pg = 8
-       pg     = request.args.get(get_page_parameter(), type=int, default=1)
-       pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
-       pgntn  = Pagination(page=pg, total=len(itms), per_page=per_pg, css_framework="bootstrap4")
+    print(spr_itms)
+
+    fl = open(DOWNLOAD_PATH, "x", encoding="UTF-8")
+
+    fl.writelines(spr_itms)
+
+    fl.close()
 
 
-       return render_template("export_to_csv.html", pagination=pgntn, page_data=pg_dat)
+    return render_template("export_to_csv.html")
+
+
+
+
+#「download」のURLエンドポイントを定義する
+@app.route("/download", methods=["GET"])
+def download():
+
+    return send_file(DOWNLOAD_PATH, as_attachment=True)
 
 
 
@@ -434,7 +457,8 @@ def export_to_csv():
 #「prompt」のURLエンドポイントを定義する
 @app.route("/prompt", methods=["GET", "POST"])
 def prompt():
-    itms = []
+    itms   = []
+    row_id = -1
 
 
     if request.method == "GET":
@@ -462,6 +486,7 @@ def prompt():
 
             return redirect(url_for("index"))
 
+
     conn = sqlite3.connect("app_tmm.db")
     cur  = conn.cursor()
 
@@ -471,40 +496,78 @@ def prompt():
     cur.execute(sql1)
     conn.commit()
 
-    if   request.form["syutaikin"] == "出勤":
-         flash("出勤時刻を記録しました")
 
-         sql2 = """INSERT INTO attendance (usr_nm, bgn_dttm) VALUES (?, ?);"""
-         crrnt_tm_in_asa_tky = datetime.datetime.now(pytz.timezone("Asia/Tokyo"))
-         cur.execute(sql2, (session["user_name"], crrnt_tm_in_asa_tky))
-         conn.commit()
+    if   request.form["attendance"] == "出勤":
 
-         print(session["user_name"])
-         print(crrnt_tm_in_asa_tky)
+         sql2 = """SELECT * FROM attendance;"""
+         cur.execute(sql2)
 
-
-         cur.close()
-         conn.close()
+ 
+         for  row in cur.fetchall():
+              if row[3] == "未決定":
+                 row_id = row[0]
 
 
-         return render_template("prompt.html", user_name=session["user_name"])
+         if   row_id == -1:
+              sql3 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
+              crrnt_tm_in_asa_tky = datetime.datetime.now(pytz.timezone("Asia/Tokyo"))
+              cur.execute(sql3, (session["user_name"], crrnt_tm_in_asa_tky, "未決定"))
+              conn.commit()
+
+              cur.close()
+              conn.close()
+
+              flash("出勤日時を記録しました")
 
 
+              return render_template("prompt.html", user_name=session["user_name"])
+
+         else:
+             
+              cur.close()
+              conn.close()
 
 
-    if   request.form["syutaikin"] == "退勤":
-         flash("退勤時刻を記録しました")
-
-         sql3 = """INSERT INTO attendance(usr_nm, end_dttm) VALUES (?,?);"""
-         crrnt_tm_in_asa_tky = datetime.datetime.now(pytz.timezone("Asia/Tokyo"))
-         cur.execute(sql3, (session["user_name"], crrnt_tm_in_asa_tky))
-         conn.commit()
-
-         cur.close()
-         conn.close()
+              flash("出勤日時は既に記録されています")
 
 
-         return render_template("prompt.html", user_name=session["user_name"])
+              return render_template("prompt.html", user_name=session["user_name"])
+
+
+    if   request.form["attendance"] == "退勤":
+
+         sql4 = """SELECT * FROM attendance;"""
+         cur.execute(sql4)
+
+ 
+         for  row in cur.fetchall():
+              if row[3] == "未決定":
+                 row_id = row[0]
+
+
+         if   row_id != -1:
+              sql5 = """UPDATE attendance SET usr_nm=?, end_dttm=? WHERE id=?;"""
+              crrnt_tm_in_asa_tky = datetime.datetime.now(pytz.timezone("Asia/Tokyo"))
+              cur.execute(sql5, (session["user_name"], crrnt_tm_in_asa_tky, row_id))
+              conn.commit()
+
+              cur.close()
+              conn.close()
+  
+
+              flash("退勤日時を記録しました")
+
+
+              return render_template("prompt.html", user_name=session["user_name"])
+
+
+         else:
+
+              flash("出勤日時が記録されていません")
+
+
+              return render_template("prompt.html", user_name=session["user_name"])
+  
 
 
 

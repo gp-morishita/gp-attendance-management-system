@@ -15,14 +15,7 @@ text-align: center;
 background: black;
 }
 
-.safe_message_text {
-color: white;
-font-size: 16px;
-text-align: center;
-background: midnightblue;
-}
-
-.caution_message_text {
+.flash_message_text {
 color: white;
 font-size: 16px;
 text-align: center;
@@ -125,6 +118,11 @@ border-color: black;
 border-radius: 0%;
 width:  300px;
 height: 300px;
+}
+
+
+.RealtimeClockArea2 {
+font-size: 28px;
 }
 
 
