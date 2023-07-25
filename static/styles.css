@@ -15,14 +15,7 @@ text-align: center;
 background: black;
 }
 
-.logout_message_text {
-color: white;
-font-size: 16px;
-text-align: center;
-background: midnightblue;
-}
-
-.signout_message_text {
+.safe_message_text {
 color: white;
 font-size: 16px;
 text-align: center;

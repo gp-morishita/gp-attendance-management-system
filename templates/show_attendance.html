@@ -11,17 +11,17 @@
 <link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/bootstrap.css")}}">
 <link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/sticky-footer.css")}}">
 </head>
-<body background="{{url_for("static", filename="show_messages.jpg")}}">
+<body>
 <header class="header">
 <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-<a class="navbar-brand" href="{{url_for("logout")}}">gp-attendance-management-system</a>
+<a class="navbar-brand" href="{{url_for("index")}}">gp-attendance-management-system</a>
 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav4" aria-controls="navbarNav4" aria-expanded="false" aria-label="Toggle navigation">
 <span class="navbar-toggler-icon"></span>
 </button>
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
-<a class="nav-link" href="{{url_for("logout")}}">ログアウト</a>
+<a class="nav-link" href="{{url_for("index")}}">ログアウト</a>
 </li>
 </ul>
 </div>
@@ -33,25 +33,23 @@
 <thead>
 <tr>
 <th scope="col1">ユーザー名</th>
-<th scope="col1">タイムスタンプ</th>
-<th scope="col1">ユーザーメッセージ</th>
-<th scope="col1">ボットメッセージ</th>
+<th scope="col1">開始日時</th>
+<th scope="col1">終了日時</th>
 </tr>
 </thead>
 <tbody>
-{% for item in page_data %}
+{% for item in items %}
 <tr>
-<td>{{item[1]}}</td>
-<td>{{item[2]}}</td>
-<td>{{item[3]}}</td>
-<td>{{item[4]}}</td>
-</tr>
+    <td>{{item[0]}}</td>
+    <td>{{item[1]}}</td>
+    <td>{{item[2]}}</td>
+    </tr>
 {% endfor %}
 </tbody>
 </table>
 <br>
 <br>
-{{pagination.links}}
+
 <br>
 <br>
 <br>
