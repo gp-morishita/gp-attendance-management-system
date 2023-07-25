@@ -1,34 +1,33 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
- "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html lang="ja">
 <head>
-<meta http-equiv="content-type" content="text/html;charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-<meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"/>
+<meta name="description" content="GIFT-PLACEの勤怠管理システムです。" />
 <title>gp-attendance-management-system</title>
-<link rel="shortcut icon" type="image/x-icon" href="{{url_for("static", filename="favicon.ico")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="styles.css")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/bootstrap.css")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/sticky-footer.css")}}">
+<link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}"/>
+<linkrel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}"/>
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/bootstrap.css')}}"/>
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/sticky-footer.css')}}"/>
 </head>
-<body>
+<body style="background-color:gray;">
 <header class="header">
 <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-<a class="navbar-brand" href="{{url_for("index")}}">gp-attendance-management-system</a>
+<a class="navbar-brand" href="{{url_for('index')}}">gp-attendance-management-system</a>
 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav4" aria-controls="navbarNav4" aria-expanded="false" aria-label="Toggle navigation">
 <span class="navbar-toggler-icon"></span>
 </button>
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
-<a class="nav-link" href="{{url_for("index")}}">ログアウト</a>
+<a class="nav-link" href="{{url_for('index')}}">ログアウト</a>
 </li>
 </ul>
 </div>
 </nav>
 </header>
-<br>
-<br>
+<br />
+<br />
 <table class="table">
 <thead>
 <tr>
@@ -38,34 +37,32 @@
 </tr>
 </thead>
 <tbody>
-{% for item in items %}
+{% for item in page_data %}
 <tr>
-    <td>{{item[0]}}</td>
-    <td>{{item[1]}}</td>
-    <td>{{item[2]}}</td>
-    </tr>
+<td>{{item[1]}}</td>
+<td>{{item[2]}}</td>
+<td>{{item[3]}}</td>
+</tr>
 {% endfor %}
 </tbody>
 </table>
 <br>
 <br>
-
+{{pagination.links}}
 <br>
 <br>
-<br>
-<br>
-<a class="btn btn-primary" href="{{url_for("admin_prompt")}}">前の画面に戻る</a>
+<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">前の画面に戻る</a>
 <br>
 <br>
 <br>
 <br>
 <footer class="footer">
 <div class="container text-center">
-<p class="text-muted">Copyright &copy; 2023  GIFT-PLACE  All rights reserved.</p>
+<p class="text-muted">Copyright &copy; 2023 GIFT-PLACE All rights reserved.</p>
 </div>
 </footer>
-<script type="text/javascript" src="{{url_for("static", filename="jquery/jquery-3.6.4.js")}}"></script>
-<script type="text/javascript" src="{{url_for("static", filename="bootstrap(popper_bundled)/js/bootstrap.bundle.js")}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='jquery/jquery-3.6.4.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='bootstrap(popper_bundled)/js/bootstrap.bundle.js')}}"></script>
 <script type="text/javascript">
 var btn=$('.footer');
 $(window).scroll(function(){if ($(this).scrollTop() > 80){btn.fadeIn();} else {btn.fadeOut();}});

@@ -16,7 +16,7 @@ from flask_paginate import Pagination, get_page_parameter
 
 
 
-#管理者用パスワード
+#管理者用パスワードを宣言する
 ADMIN_PASSWORD = "secret"
 
 
@@ -352,23 +352,21 @@ def show_attendance():
 
  
        for row in cur.fetchall():
-           itms.append(row[1])
-           itms.append(row[2])
-           itms.append(row[3])
+           itms.append(row)
 
 
        cur.close()
        conn.close()
 
 
-     #   per_pg = 8
-     #   pg     = request.args.get(get_page_parameter(), type=int, default=1)
-     #   pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
-     #   pgntn  = Pagination(page=pg, total=len(itms), per_page=per_pg, css_framework="bootstrap4")
+       per_pg = 8
+       pg     = request.args.get(get_page_parameter(), type=int, default=1)
+       pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
+       pgntn  = Pagination(page=pg, total=len(itms), per_page=per_pg, css_framework="bootstrap4")
 
 
-     #   return render_template("show_attendance.html", pagination=pgntn, page_data=pg_dat)
-       return render_template("show_attendance.html", items=itms)
+       return render_template("show_attendance.html", pagination=pgntn, page_data=pg_dat)
+
 
 
 
@@ -415,9 +413,7 @@ def export_to_csv():
 
  
        for row in cur.fetchall():
-           itms.append(row[1])
-           itms.append(row[2])
-           itms.append(row[3])
+           itms.append(row)
 
 
        cur.close()

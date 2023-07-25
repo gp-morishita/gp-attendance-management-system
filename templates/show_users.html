@@ -12,7 +12,7 @@
 <link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/bootstrap.css")}}">
 <link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/sticky-footer.css")}}">
 </head>
-<body>
+<body style="background-color:gray;">
 <header class="header">
 <nav class="navbar navbar-expand-lg navbar-dark bg-success">
 <a class="navbar-brand" href="{{url_for("index")}}">gp-attendance-management-system</a>
@@ -41,9 +41,9 @@
 <tbody>
 {% for item in page_data %}
 <tr>
-<td>{{item[0]}}</td>
 <td>{{item[1]}}</td>
 <td>{{item[2]}}</td>
+<td>{{item[3]}}</td>
 </tr>
 {% endfor %}
 </tbody>
