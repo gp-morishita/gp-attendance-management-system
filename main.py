@@ -214,7 +214,7 @@ def signout():
             return render_template("signout.html")
 
 
-         sql1 = """UPDATE users SET usr_nm="ERASED", psswrd="ERASED" WHERE usr_nm=? AND ml_addr=? AND psswrd=?;"""
+         sql1 = """UPDATE users SET usr_nm="ERASED", psswrd="ERASED" WHERE usr_nm=? AND psswrd=?;"""
          cur.execute(sql1, (request.form["username"], request.form["password"]))
          conn.commit()
 
