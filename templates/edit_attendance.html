@@ -48,7 +48,6 @@
 </form>
 </div>
 <br>
-<br>
 {% with messages = get_flashed_messages() %}
 {% if messages %}
 {% for message in messages %}
@@ -56,7 +55,6 @@
 {% endfor %}
 {% endif %}
 {% endwith %}
-<br>
 <br>
 <a class="btn btn-primary" href="{{url_for('show_attendance')}}">前の画面に戻る</a>
 <br>
