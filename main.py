@@ -472,7 +472,8 @@ def download():
 # 「prompt」のURLエンドポイントを定義する
 @app.route("/prompt", methods=["GET", "POST"])
 def prompt():
-    row_id = -1
+    row_num = 0
+    row_id = 0
 
     if request.method == "GET":
 
@@ -502,25 +503,31 @@ def prompt():
     cur = conn.cursor()
 
     sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                     usr_nm TEXT NOT NULL, bgn_dttm TEXT, end_dttm TEXT);"""
+                                                     usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
     cur.execute(sql1)
     conn.commit()
 
     if request.form["attendance"] == "出勤":
 
-        sql2 = """SELECT * FROM attendance;"""
-        cur.execute(sql2)
+        sql2 = """SELECT * FROM attendance WHERE usr_nm=?;"""
+        cur.execute(sql2, [session["user_name"]])
 
         for row in cur.fetchall():
-            if row[3] == "未決定":
-                row_id = row[0]
+            if row[3] == "UNDECIDED":
 
-        if row_id == -1:
+                flash("出勤日時は既に記録されています")
+                return render_template("prompt.html", user_name=session["user_name"])
+
+        for row in cur.fetchall():
+            row_num = row_num + 1
+
+        if row_num == 0:
+
             sql3 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
             crrnt_tm_in_asa_tky = datetime.datetime.now(
                 pytz.timezone("Asia/Tokyo"))
             cur.execute(sql3, (session["user_name"],
-                        crrnt_tm_in_asa_tky, "未決定"))
+                        crrnt_tm_in_asa_tky, "UNDECIDED"))
             conn.commit()
 
             cur.close()
@@ -530,22 +537,13 @@ def prompt():
 
             return render_template("prompt.html", user_name=session["user_name"])
 
-        else:
-
-            cur.close()
-            conn.close()
-
-            flash("出勤日時は既に記録されています")
-
-            return render_template("prompt.html", user_name=session["user_name"])
-
     if request.form["attendance"] == "退勤":
 
-        sql4 = """SELECT * FROM attendance;"""
-        cur.execute(sql4)
+        sql4 = """SELECT * FROM attendance WHERE usr_nm=?;"""
+        cur.execute(sql4, [session["user_name"]])
 
         for row in cur.fetchall():
-            if row[3] == "未決定":
+            if row[3] == "UNDECIDED":
                 row_id = row[0]
 
         if row_id != -1:
