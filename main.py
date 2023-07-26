@@ -1,150 +1,173 @@
 # coding: utf-8
 
 
-
-
-#既成のモジュールをインポートする
+# 既成のモジュールをインポートする
 import os
 import flask
 import sqlite3
 import datetime
 import pytz
 from datetime import timedelta
-from flask import Flask, render_template, request, url_for, redirect, session, flash, abort
+from flask import Flask, render_template, request, url_for, redirect, session, flash, send_file
 from flask_paginate import Pagination, get_page_parameter
 
 
-#独自のモジュールをインポートする
-import module
+# 管理者用パスワードを宣言する
+ADMIN_PASSWORD = "secret"
+
+# ダウンロードファイルのパスを宣言する
+DOWNLOAD_PATH = "etc/export_attendance.csv"
 
 
+# Flask本体を構築する
+app = flask.Flask(__name__, static_folder="static",
+                  template_folder="templates")
+
+# セッションキーを設定する
+app.config["SECRET_KEY"] = "python-flask-application__session-secret-key"
 
 
-#Flask本体を構築する
-app = flask.Flask(__name__, static_folder="static", template_folder="templates")
-
-#セッションキーを設定する
-app.config["SECRET_KEY"] = "python_flask_chatbot__session_secret_key"
-
-
-
-
-
-
-
-
-#「index」のURLURLエンドポイントを定義する
-@app.route("/",      methods=["GET"])
-@app.route("/index", methods=["GET"])
+# 「index」のURLエンドポイントを定義する
+@app.route("/",      methods=["GET", "POST"])
+@app.route("/index", methods=["GET", "POST"])
 def index():
+    row_num = 0
 
     session.clear()
 
+    if request.method == "POST":
 
-    return render_template("index.html")
+        conn = sqlite3.connect("app_usrs.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, psswrd TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
+        sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
+        cur.execute(sql2, [request.form["username"]])
+
+        for row in cur.fetchall():
+            row_num = row_num + 1
+
+        if row_num == 0:
+            cur.close()
+            conn.close()
+
+            flash("そのユーザー名は登録されていません！")
+
+            return render_template("index.html")
+
+        sql3 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
+        cur.execute(sql3, [request.form["password"]])
+
+        for row in cur.fetchall():
+            if row != request.form["password"]:
+                cur.close()
+                conn.close()
+
+                flash("そのパスワードは間違っています！")
+
+                return render_template("index.html")
+
+        cur.close()
+        conn.close()
+
+        session["user_name"] = request.form["username"]
+        session["logged_in"] = True
+        app.permanent_session_lifetime = timedelta(minutes=30)
+
+        return redirect(url_for("prompt"))
+
+    else:
+
+        return render_template("index.html")
 
 
-
-
-#「usage」のURLエンドポイントを定義する
+# 「usage」のURLエンドポイントを定義する
 @app.route("/usage", methods=["GET"])
 def usage():
 
     session.clear()
 
-
     return render_template("usage.html")
 
 
-
-
-#「about」のURLエンドポイントを定義する
+# 「about」のURLエンドポイントを定義する
 @app.route("/about", methods=["GET"])
 def about():
 
     session.clear()
 
-
     return render_template("about.html")
 
 
-
-
-#「signup」のURLエンドポイントを定義する
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
+# 「signin」のURLエンドポイントを定義する
+@app.route("/signin", methods=["GET", "POST"])
+def signin():
 
     if request.method == "POST":
 
-       conn = sqlite3.connect("app_usrs.db")
-       cur  = conn.cursor()
+        conn = sqlite3.connect("app_usrs.db")
+        cur = conn.cursor()
 
+        sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                   usr_nm TEXT NOT NULL, psswrd TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
 
-       sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                   usr_nm TEXT NOT NULL, ml_addr TEXT NOT NULL, psswrd TEXT NOT NULL);"""
-       cur.execute(sql1)
-       conn.commit()
+        sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
+        cur.execute(sql2, [request.form["username"]])
 
+        for row in cur.fetchall():
+            if row == (request.form["username"],):
+                flash("そのユーザー名は既に登録されています！")
+                cur.close()
+                conn.close()
 
-       sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-       cur.execute(sql2, [request.form["username"]])
+                return render_template("signin.html")
 
-       for row in cur.fetchall():
-           if row == (request.form["username"],):
-              flash("そのユーザー名は既に登録されています！")
-              cur.close()
-              conn.close()
+        sql2 = """INSERT INTO users(usr_nm, psswrd) VALUES (?,?);"""
+        cur.execute(sql2, (request.form["username"], request.form["password"]))
+        conn.commit()
 
-              return render_template("signup.html")
+        cur.close()
+        conn.close()
 
+        session["user_name"] = request.form["username"]
+        session["logged_in"] = True
+        app.permanent_session_lifetime = timedelta(minutes=30)
 
-       sql2 = """INSERT INTO users(usr_nm, ml_addr, psswrd) VALUES (?, ?, ?);"""
-       cur.execute(sql2, (request.form["username"], request.form["mailaddress"], request.form["password"]))
-       conn.commit()
-
-       cur.close()
-       conn.close()
-
-       session["user_name"] = request.form["username"]
-       session["logged_in"] = True
-       app.permanent_session_lifetime = timedelta(minutes=30)
-
-
-       return redirect(url_for("prompt"))
-
+        return redirect(url_for("prompt"))
 
     else:
 
-
-       return render_template("signup.html")
-
+        return render_template("signin.html")
 
 
-
-#「signout」のURLエンドポイントを定義する
+# 「signout」のURLエンドポイントを定義する
 @app.route("/signout", methods=["GET", "POST"])
 def signout():
     row_num = 0
 
+    if request.method == "POST":
 
-    if   request.method == "POST":
+        conn = sqlite3.connect("app_usrs.db")
+        cur = conn.cursor()
 
-         conn = sqlite3.connect("app_usrs.db")
-         cur  = conn.cursor()
+        sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, psswrd TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
 
-         sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                     usr_nm TEXT NOT NULL, ml_addr TEXT NOT NULL, psswrd TEXT NOT NULL);"""
-         cur.execute(sql1)
-         conn.commit()
+        sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
+        cur.execute(sql2, [request.form["username"]])
 
+        for row in cur.fetchall():
+            row_num = row_num + 1
 
-         sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-         cur.execute(sql2, [request.form["username"]])
-
-         for row in cur.fetchall():
-             row_num = row_num + 1
-
-         if row_num == 0:
+        if row_num == 0:
             cur.close()
             conn.close()
 
@@ -152,467 +175,391 @@ def signout():
 
             return render_template("signout.html")
 
+        sql1 = """UPDATE users SET usr_nm="ERASED", psswrd="ERASED" WHERE usr_nm=? AND psswrd=?;"""
+        cur.execute(sql1, (request.form["username"], request.form["password"]))
+        conn.commit()
 
-         sql1 = """UPDATE users SET usr_nm="ERASED", ml_addr="ERASED", psswrd="ERASED" WHERE usr_nm=? AND ml_addr=? AND psswrd=?;"""
-         cur.execute(sql1, (request.form["username"], request.form["mailaddress"], request.form["password"]))
-         conn.commit()
+        cur.close()
+        conn.close()
 
-         cur.close()
-         conn.close()
+        session.clear()
 
-         session.clear()
-         flash("またのご利用お待ちしております")
-
-         return render_template("byebye.html")
+        return redirect(url_for("index"))
 
     else:
 
-         return render_template("signout.html")
+        return render_template("signout.html")
 
 
+# 「admin_login」のURLエンドポイントを定義する
+@app.route("/admin_login", methods=["GET", "POST"])
+def admin_login():
 
+    if request.method == "POST":
 
-#「login」のURLエンドポイントを定義する
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    row_num = 0
+        if ADMIN_PASSWORD != request.form["password"]:
 
+            flash("そのパスワードは間違っています")
 
-    if   request.method == "POST":
+            return render_template("admin_login.html")
 
-         conn = sqlite3.connect("app_usrs.db")
-         cur  = conn.cursor()
+        session["is_admin"] = True
+        session["logged_in"] = True
+        app.permanent_session_lifetime = timedelta(minutes=30)
 
-         sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                     usr_nm TEXT NOT NULL, ml_addr TEXT NOT NULL, psswrd TEXT NOT NULL);"""
-         cur.execute(sql1)
-         conn.commit()
-
-
-         sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-         cur.execute(sql2, [request.form["username"]])
-
-         for row in cur.fetchall():
-             row_num = row_num + 1
-
-         if row_num == 0:
-            cur.close()
-            conn.close()
-
-            flash("そのユーザー名は登録されていません！")
-
-            return render_template("login.html")
-
-
-         sql3 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-         cur.execute(sql3, [request.form["password"]])
-
-         for row in cur.fetchall():
-             if row != request.form["password"]:
-                cur.close()
-                conn.close()
-
-                flash("そのパスワードは間違っています！")
-
-                return render_template("login.html")
-
-
-         cur.close()
-         conn.close()
-
-
-         session["user_name"] = request.form["username"]
-         session["logged_in"] = True
-         app.permanent_session_lifetime = timedelta(minutes=30)
-
-
-         return redirect(url_for("prompt"))
-
+        return redirect(url_for("admin_prompt"))
 
     else:
 
-         return render_template("login.html")
+        return render_template("admin_login.html")
 
 
-
-
-#「logout」のURLエンドポイントを定義する
-@app.route("/logout", methods=["GET"])
-def logout():
-
-    session.clear()
-    flash("ログアウトしました")
-
-
-    return render_template("logout.html")
-
-
-
-
-#「show_users」のURLエンドポイントを定義する
+# 「show_users」のURLエンドポイントを定義する
 @app.route("/show_users", methods=["GET"])
 def show_users():
     itms = []
 
+    if request.method == "GET":
+
+        if "logged_in" not in session:
+
+            return redirect(url_for("index"))
+
+        elif session["logged_in"] == False:
+
+            return redirect(url_for("index"))
 
     if request.method == "GET":
 
-       if   "logged_in" not in session:
-            
-             return redirect(url_for("login"))
+        if "is_admin" not in session:
 
-       elif  session["logged_in"] == False:
+            return redirect(url_for("index"))
 
-             return redirect(url_for("login"))
+        elif session["is_admin"] == False:
 
+            return redirect(url_for("index"))
 
     conn = sqlite3.connect("app_usrs.db")
-    cur  = conn.cursor()
+    cur = conn.cursor()
 
-
-    sql1 = """SELECT * From users;"""
+    sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                usr_nm TEXT NOT NULL, psswrd TEXT NOT NULL);"""
     cur.execute(sql1)
+    conn.commit()
+
+    sql2 = """SELECT * From users;"""
+    cur.execute(sql2)
 
     for row in cur.fetchall():
         itms.append(row)
-
 
     cur.close()
     conn.close()
 
     per_pg = 8
-    pg     = request.args.get(get_page_parameter(), type=int, default=1)
+    pg = request.args.get(get_page_parameter(), type=int, default=1)
     pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
-    pgntn  = Pagination(page=pg, total=len(itms), per_page=per_pg, css_framework="bootstrap4")
-
+    pgntn = Pagination(page=pg, total=len(
+        itms), per_page=per_pg, css_framework="bootstrap4")
 
     return render_template("show_users.html", pagination=pgntn, page_data=pg_dat)
 
 
-
-
-#「show_images」のURLエンドポイントを定義する
-@app.route("/show_images", methods=["GET"])
-def show_images():
-    itms = []
-
-
-    if request.method == "GET":
-
-       if  "logged_in" not in session:
-            
-            return redirect(url_for("login"))
-
-       elif session["logged_in"] == False:
-
-            return redirect(url_for("login"))
-
-
-       conn = sqlite3.connect("app_imgs.db")
-       cur  = conn.cursor()
-
-
-       sql1 = """CREATE TABLE IF NOT EXISTS images (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                    orign_img_pth TEXT NOT NULL, gnrtd_img_pth TEXT NOT NULL);"""
-       cur.execute(sql1)
-       conn.commit()
-
-
-       sql2 = """SELECT * FROM images;"""
-       cur.execute(sql2)
-
- 
-       for row in cur.fetchall():
-           itms.append(row[1])
-           itms.append(row[2])
-
-
-       cur.close()
-       conn.close()
-
-
-       per_pg = 8
-       pg     = request.args.get(get_page_parameter(), type=int, default=1)
-       pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
-       pgntn  = Pagination(page=pg, total=len(itms), per_page=per_pg, css_framework="bootstrap4")
-
-
-       return render_template("show_images.html", pagination=pgntn, page_data=pg_dat)
-
-
-
-
-#「show_messages」のURLエンドポイントを定義する
-@app.route("/show_messages", methods=["GET"])
-def show_messages():
+# 「show_attendance」のURLエンドポイントを定義する
+@app.route("/show_attendance", methods=["GET"])
+def show_attendance():
     itms = []
 
     if request.method == "GET":
 
-       if   "logged_in" not in session:
-            
-             return redirect(url_for("login"))
+        if "logged_in" not in session:
 
-       elif  session["logged_in"] == False:
+            return redirect(url_for("index"))
 
-             return redirect(url_for("login"))
+        elif session["logged_in"] == False:
+
+            return redirect(url_for("index"))
+
+    if request.method == "GET":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("index"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("index"))
+
+        conn = sqlite3.connect("app_tmm.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                        usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
+        sql2 = """SELECT * FROM attendance;"""
+        cur.execute(sql2)
+
+        for row in cur.fetchall():
+            itms.append(row)
+
+        cur.close()
+        conn.close()
+
+        per_pg = 8
+        pg = request.args.get(get_page_parameter(), type=int, default=1)
+        pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
+        pgntn = Pagination(page=pg, total=len(
+            itms), per_page=per_pg, css_framework="bootstrap4")
+
+        return render_template("show_attendance.html", pagination=pgntn, page_data=pg_dat)
 
 
-       conn = sqlite3.connect("app_mssgs.db")
-       cur  = conn.cursor()
-
-
-       sql1 = """CREATE TABLE IF NOT EXISTS messages (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                      usr_nm TEXT NOT NULL, tm_stmp TEXT NOT NULL, orign_txts TEXT NOT NULL, gnrtd_txts TEXT NOT NULL);"""
-       cur.execute(sql1)
-       conn.commit()
-
-
-       sql2 = """SELECT * FROM messages;"""
-       cur.execute(sql2)
-
-
-       for row in cur.fetchall():
-           itms.append(row)
-
- 
-       cur.close()
-       conn.close()
-
-
-       per_pg = 8
-       pg     = request.args.get(get_page_parameter(), type=int, default=1)
-       pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
-       pgntn  = Pagination(page=pg, total=len(itms), per_page=per_pg, css_framework="bootstrap4")
-
-
-       return render_template("show_messages.html", pagination=pgntn, page_data=pg_dat)
-
-
-
-
-#「show_results」のURLエンドポイントを定義する
-@app.route("/show_results", methods=["GET"])
-def show_results():
+# 「ecit_attendance」のURLエンドポイントを定義する
+@app.route("/edit_attendance", methods=["GET"])
+def edit_attendance():
     itms = []
 
     if request.method == "GET":
 
-       if   "logged_in" not in session:
-            
-             return redirect(url_for("login"))
+        if "logged_in" not in session:
 
-       elif  session["logged_in"] == False:
+            return redirect(url_for("index"))
 
-             return redirect(url_for("login"))
+        elif session["logged_in"] == False:
 
+            return redirect(url_for("index"))
 
-       conn = sqlite3.connect("app_rslts.db")
-       cur  = conn.cursor()
+    if request.method == "GET":
 
+        if "is_admin" not in session:
 
-       sql1 = """CREATE TABLE IF NOT EXISTS results (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                     tpc TEXT NOT NULL, cntxt TEXT NOT NULL,
-                                                     txt_djst TEXT NOT NULL, txt_sntmnt TEXT NOT NULL, uttrnc_mdl TEXT NOT NULL);"""
-       cur.execute(sql1)
-       conn.commit()
+            return redirect(url_for("index"))
 
+        elif session["is_admin"] == False:
 
-       sql2 = """SELECT * FROM results;"""
-       cur.execute(sql2)
+            return redirect(url_for("index"))
 
+        conn = sqlite3.connect("app_tmm.db")
+        cur = conn.cursor()
 
-       for row in cur.fetchall():
-           itms.append(row)
+        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                        usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
 
- 
-       cur.close()
-       conn.close()
+        sql2 = """SELECT * FROM attendance;"""
+        cur.execute(sql2)
 
+        for row in cur.fetchall():
+            itms.append(row)
 
-       per_pg = 8
-       pg     = request.args.get(get_page_parameter(), type=int, default=1)
-       pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
-       pgntn  = Pagination(page=pg, total=len(itms), per_page=per_pg, css_framework="bootstrap4")
+        cur.close()
+        conn.close()
 
-
-       return render_template("show_results.html", pagination=pgntn, page_data=pg_dat)
+        return render_template("edit_attendance.html")
 
 
+# 「export_to_csv」のURLエンドポイントを定義する
+@app.route("/export_to_csv", methods=["GET"])
+def export_to_csv():
+    itms = []
+    spr_itms = []
+
+    if request.method == "GET":
+
+        if "logged_in" not in session:
+
+            return redirect(url_for("index"))
+
+        elif session["logged_in"] == False:
+
+            return redirect(url_for("index"))
+
+    if request.method == "GET":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("index"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("index"))
+
+    try:
+        os.remove(DOWNLOAD_PATH)
+    except FileNotFoundError:
+        pass
+
+    conn = sqlite3.connect("app_tmm.db")
+    cur = conn.cursor()
+
+    sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+    cur.execute(sql1)
+    conn.commit()
+
+    sql2 = """SELECT * FROM attendance;"""
+    cur.execute(sql2)
+
+    for row in cur.fetchall():
+        buf = str(row[0]) + ", " + row[1] + ", " + \
+            row[2] + ", " + row[3] + "\n"
+        spr_itms.append(buf)
+
+    cur.close()
+    conn.close()
+
+    print(spr_itms)
+
+    fl = open(DOWNLOAD_PATH, "x", encoding="UTF-8")
+
+    fl.writelines(spr_itms)
+
+    fl.close()
+
+    return render_template("export_to_csv.html")
 
 
-#「prompt」のURLエンドポイントを定義する
+# 「download」のURLエンドポイントを定義する
+@app.route("/download", methods=["GET"])
+def download():
+
+    return send_file(DOWNLOAD_PATH, as_attachment=True)
+
+
+# 「prompt」のURLエンドポイントを定義する
 @app.route("/prompt", methods=["GET", "POST"])
 def prompt():
+    itms = []
+    row_id = -1
 
     if request.method == "GET":
 
-       if  "logged_in" not in session:
+        if "logged_in" not in session:
 
-            return redirect(url_for("login"))
+            return redirect(url_for("index"))
 
-       elif session["logged_in"] == False:
+        elif session["logged_in"] == False:
 
-            return redirect(url_for("login"))
+            return redirect(url_for("index"))
 
-       else:
+        else:
+
+            return render_template("prompt.html", user_name=session["user_name"])
+
+    if request.method == "POST":
+
+        if "logged_in" not in session:
+
+            return redirect(url_for("index"))
+
+        elif session["logged_in"] == False:
+
+            return redirect(url_for("index"))
+
+    conn = sqlite3.connect("app_tmm.db")
+    cur = conn.cursor()
+
+    sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, bgn_dttm TEXT, end_dttm TEXT);"""
+    cur.execute(sql1)
+    conn.commit()
+
+    if request.form["attendance"] == "出勤":
+
+        sql2 = """SELECT * FROM attendance;"""
+        cur.execute(sql2)
+
+        for row in cur.fetchall():
+            if row[3] == "未決定":
+                row_id = row[0]
+
+        if row_id == -1:
+            sql3 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
+            crrnt_tm_in_asa_tky = datetime.datetime.now(
+                pytz.timezone("Asia/Tokyo"))
+            cur.execute(sql3, (session["user_name"],
+                        crrnt_tm_in_asa_tky, "未決定"))
+            conn.commit()
+
+            cur.close()
+            conn.close()
+
+            flash("出勤日時を記録しました")
+
+            return render_template("prompt.html", user_name=session["user_name"])
+
+        else:
+
+            cur.close()
+            conn.close()
+
+            flash("出勤日時は既に記録されています")
+
+            return render_template("prompt.html", user_name=session["user_name"])
+
+    if request.form["attendance"] == "退勤":
+
+        sql4 = """SELECT * FROM attendance;"""
+        cur.execute(sql4)
+
+        for row in cur.fetchall():
+            if row[3] == "未決定":
+                row_id = row[0]
+
+        if row_id != -1:
+            sql5 = """UPDATE attendance SET usr_nm=?, end_dttm=? WHERE id=?;"""
+            # crrnt_tm_in_asa_tky = datetime.datetime.now(
+            #    pytz.timezone("Asia/Tokyo"))
+            t_delta = datetime.timedelta(hours=9)
+            JST = datetime.timezone(t_delta, "JST")
+            now = datetime.datetime.now(JST)
+            frmttd_dttm = now.strftime("%Y/%m/%d %H:%M:%S")
+            cur.execute(sql5, (session["user_name"],
+                        frmttd_dttm, row_id))
+            conn.commit()
+
+            cur.close()
+            conn.close()
+
+            flash("退勤日時を記録しました")
+
+            return render_template("prompt.html", user_name=session["user_name"])
+
+        else:
+
+            flash("出勤日時が記録されていません")
 
             return render_template("prompt.html", user_name=session["user_name"])
 
 
-    if request.method == "POST":
-
-       if ("logged_in" not in session and session["logged_in"] == False):
-
-           return redirect(url_for("login"))
-
-
-       orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst = module.analyze_text(request.form["sent_msg_txt"])
-       orign_img = module.restoration_image_from_datastream(request.files["sent_msg_img"].stream)
-       anlyzd_img, img_ttl, img_dscrptn = module.analyze_image(orign_img)
-       gnrtd_img                        = module.generate_image(anlyzd_img)
-       orign_img_pth = module.generate_image_file(orign_img, "(O)")
-       gnrtd_img_pth = module.generate_image_file(gnrtd_img, "(A)")
-       cntxt, tpc, usr_info, uttrnc_mdl = module.inference_and_speculate(orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst, anlyzd_img, img_ttl, img_dscrptn)
-       gnrtd_txts  = module.generate_text(orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst, cntxt, tpc, usr_info, uttrnc_mdl)
-       lrnng_rslts = module.learning(orign_txts, txt_mean, txt_tkns, txt_sntmnt, txt_djst, cntxt, tpc, usr_info, uttrnc_mdl, gnrtd_img_pth, img_ttl, img_dscrptn)
-
-       session["origin_texts"]         = orign_txts
-       session["generated_texts"]      = gnrtd_txts
-       session["text_mean"]            = txt_mean
-       session["text_tokens"]          = txt_tkns
-       session["topic"]                = tpc
-       session["context"]              = cntxt
-       session["text_dijest"]          = txt_djst
-       session["text_sentiment"]       = txt_sntmnt
-       session["utterance_modal"]      = uttrnc_mdl
-       session["origin_image_path"]    = orign_img_pth
-       session["generated_image_path"] = gnrtd_img_pth
-       session["image_title"]          = img_ttl
-
-
-       conn = sqlite3.connect("app_imgs.db")
-       cur  = conn.cursor()
-
-
-       sql1 = """CREATE TABLE IF NOT EXISTS images (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                    orign_img_pth TEXT NOT NULL, gnrtd_img_pth TEXT NOT NULL);"""
-       cur.execute(sql1)
-       conn.commit()
-
-
-       sql2 = """INSERT INTO images (orign_img_pth, gnrtd_img_pth) VALUES (?,?);"""
-       orign_img_flnm = orign_img_pth.replace("static", "")
-       gnrtd_img_flnm = gnrtd_img_pth.replace("static", "")
-       cur.execute(sql2, (orign_img_flnm, gnrtd_img_flnm))
-       conn.commit()
-
-
-       cur.close()
-       conn.close()
-
-
-       conn = sqlite3.connect("app_rslts.db")
-       cur  = conn.cursor()
-
-       sql3 = """CREATE TABLE IF NOT EXISTS results (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                     tpc TEXT NOT NULL, cntxt TEXT NOT NULL,
-                                                     txt_djst TEXT NOT NULL, txt_sntmnt TEXT NOT NULL, uttrnc_mdl TEXT NOT NULL);"""
-       cur.execute(sql3)
-       conn.commit()
-
-
-       sql4 = """INSERT INTO results (tpc, cntxt, txt_djst, txt_sntmnt, uttrnc_mdl) VALUES (?,?,?,?,?);"""
-       cur.execute(sql4, (tpc, cntxt, txt_djst, txt_sntmnt, uttrnc_mdl))
-       conn.commit()
-
- 
-       cur.close()
-       conn.close()
-
-
-       conn = sqlite3.connect("app_mssgs.db")
-       cur  = conn.cursor()
-
-
-       sql5 = """CREATE TABLE IF NOT EXISTS messages (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, usr_nm TEXT NOT NULL, tm_stmp TEXT NOT NULL, orign_txts TEXT NOT NULL, gnrtd_txts TEXT NOT NULL);"""
-       cur.execute(sql5)
-       conn.commit()
-
-
-       sql6 = """INSERT INTO messages (usr_nm, tm_stmp, orign_txts, gnrtd_txts) VALUES (?,?,?,?);"""
-       crrnt_tm_in_asa_tky = datetime.datetime.now(pytz.timezone("Asia/Tokyo"))
-       cur.execute(sql6, (session["user_name"], crrnt_tm_in_asa_tky, orign_txts, gnrtd_txts))
-       conn.commit()
-
- 
-       cur.close()
-       conn.close()
-
-
-       conn = sqlite3.connect("app_cptns.db")
-       cur  = conn.cursor()
-
-
-       sql7 = """CREATE TABLE IF NOT EXISTS captions (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, img_cptns TEXT NOT NULL);"""
-       cur.execute(sql7)
-       conn.commit()
-
-
-       sql8 = """INSERT INTO captions (img_cptns) VALUES (?);"""
-       cur.execute(sql8, [img_ttl])
-       conn.commit()
-
- 
-       cur.close()
-       conn.close()
-
-
-       return redirect(url_for("reply"))
-
-
-
-
-#「reply」のURLエンドポイントを定義する
-@app.route("/reply", methods=["GET"])
-def reply():
+# 「admin_prompt」のURLエンドポイントを定義する
+@app.route("/admin_prompt", methods=["GET"])
+def admin_prompt():
 
     if request.method == "GET":
 
-       if  "logged_in" not in session:
-            
-            return redirect(url_for("login"))
+        if "logged_in" not in session:
 
-       elif session["logged_in"] == False:
+            return redirect(url_for("index"))
 
-            return redirect(url_for("login"))
+        elif session["logged_in"] == False:
 
-       else:
+            return redirect(url_for("index"))
 
-            if  "origin_texts" not in session:
+        if "is_admin" not in session:
 
-                 return redirect(url_for("prompt"))
+            return redirect(url_for("index"))
 
-            else:
+        elif session["is_admin"] == False:
 
-                 return render_template("reply.html", \
-                                         origin_texts         = session["origin_texts"], \
-                                         generated_texts      = session["generated_texts"], \
-                                         text_mean            = session["text_mean"], \
-                                         text_tokens          = session["text_tokens"], \
-                                         topic                = session["topic"], \
-                                         context              = session["context"], \
-                                         text_dijest          = session["text_dijest"], \
-                                         text_sentiment       = session["text_sentiment"], \
-                                         utterance_modal      = session["utterance_modal"], \
-                                         origin_image_path    = session["origin_image_path"], \
-                                         generated_image_path = session["generated_image_path"], \
-                                         image_title          = session["image_title"])
+            return redirect(url_for("index"))
+
+        return render_template("admin_prompt.html")
 
 
-
-
-
-#当該モジュールが実行起点かどうかを確認した上で、Flask本体を起動する
+# 当該モジュールが実行起点かどうかを確認した上で、Flask本体を起動する
 if __name__ == '__main__':
-   app.run(debug=True, host="localhost", port=5000)
+    app.run(debug=True, host="localhost", port=5000)

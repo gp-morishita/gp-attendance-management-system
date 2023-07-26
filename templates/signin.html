@@ -3,15 +3,15 @@
 <html lang="ja">
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-<meta name="description" content="Gift-Placeの勤怠管理システムです。">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
 <title>gp-attendance-management-system</title>
 <link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
 <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
 <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/bootstrap.css')}}">
 <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/sticky-footer.css')}}">
 </head>
-<body style="background-color:gray;">
+<body background="{{url_for('static', filename='background-image.jpg')}}">
 <header class="header">
 <nav class="navbar navbar-expand-lg navbar-dark bg-success">
 <a class="navbar-brand" href="{{url_for('index')}}">gp-attendance-management-system</a>
@@ -29,30 +29,42 @@
 <li class="nav-item">
 <a class="nav-link" href="{{url_for('about')}}">サイトについて</a>
 </li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for('signin')}}">サインイン</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for('signout')}}">サインアウト</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for('admin_login')}}">管理者ログイン</a>
-</li>
 </ul>
 </div>
 </nav>
 </header>
+<div class="login-form">
+<form method="post">
+<h2 class="text-center">サインイン</h2>
+<div class="form-group">
+<input type="text" class="form-control" placeholder="ユーザー名" required="required" name="username">
+</div>
+<div class="form-group">
+<input type="password" class="form-control" placeholder="パスワード" required="required" name="password">
+</div>
+<div class="form-group">
+<button type="submit" class="btn btn-primary btn-block">サインイン</button>
+</div>
+</form>
+</div>
 <br>
 <br>
 <br>
 <br>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p class="flash_message_text">{{message}}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <br>
 <br>
 <br>
 <br>
 <footer class="footer">
 <div class="container text-center">
-<p class="text-muted">Copyright &copy; 2023  Gift-Place  All rights reserved.</p>
+<p class="text-muted">Copyright &copy; 2023  GIFT-PLACE  All rights reserved.</p>
 </div>
 </footer>
 <script type="text/javascript" src="{{url_for('static', filename='jquery/jquery-3.6.4.js')}}"></script>

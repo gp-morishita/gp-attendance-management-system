@@ -3,12 +3,6 @@
 
 
 
-body {
-}
-
-.header {
-}
-
 .footer {
 background: #CBE8FA;
 }
@@ -17,24 +11,11 @@ background: #CBE8FA;
 .prompt_message_text {
 font-size: 20px;
 color: white;
+text-align: center;
 background: black;
 }
 
-.logout_message_text {
-color: white;
-font-size: 16px;
-text-align: center;
-background: midnightblue;
-}
-
-.signout_message_text {
-color: white;
-font-size: 16px;
-text-align: center;
-background: midnightblue;
-}
-
-.caution_message_text {
+.flash_message_text {
 color: white;
 font-size: 16px;
 text-align: center;
@@ -139,6 +120,42 @@ width:  300px;
 height: 300px;
 }
 
+.RealtimeClockArea2 {
+font-size: 28px;
+}
+
+.login-form {
+width: 340px;
+margin: 50px auto;
+}
+
+.login-form form {
+background: #f7f7f7;
+box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+padding: 24px;
+border-radius: 16px;
+}
+
+.login-form h2 {
+margin: 0 0 15px;
+}
+
+.form-control, .btn {
+min-height: 38px;
+border-radius: 4px;
+}
+
+.btn {        
+font-size: 15px;
+font-weight: bold;
+}
+
+.login-form p {
+background: #f7f7f7;
+box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+padding: 24px;
+border-radius: 16px;
+}
 
 br {
 visibility: hidden;

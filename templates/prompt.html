@@ -4,36 +4,24 @@
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="主にPythonとJanome等を使って実装・開発しています。来年の完成を目指して鋭意製作中です。">
-<title>original-chatbot</title>
-<link rel="shortcut icon" type="image/x-icon" href="{{url_for("static", filename="favicon.ico")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="styles.css")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/bootstrap.css")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/sticky-footer.css")}}">
+<meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
+<title>gp-attendance-management-system</title>
+<link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/bootstrap.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/sticky-footer.css')}}">
 </head>
-<body background="{{url_for("static", filename="prompt.jpg")}}">
+<body background="{{url_for('static', filename='background-image.jpg')}}">
 <header class="header">
 <nav class="navbar navbar-expand-sm navbar-dark bg-success">
-<a class="navbar-brand" href="{{url_for("logout")}}">original-chatbot</a>
+<a class="navbar-brand" href="{{url_for('index')}}">gp-attendance-management-system</a>
 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav4" aria-controls="navbarNav4" aria-expanded="false" aria-label="Toggle navigation">
 <span class="navbar-toggler-icon"></span>
 </button>
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
-<a class="nav-link" href="{{url_for("show_users")}}">ユーザー</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for("show_messages")}}">メッセージ</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for("show_images")}}">画像</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for("show_results")}}">解析結果</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for("logout")}}">ログアウト</a>
+<a class="nav-link" href="{{url_for('index')}}">ログアウト</a>
 </li>
 </ul>
 </div>
@@ -41,48 +29,58 @@
 </header>
 <br>
 <br>
-<p class="prompt_message_text">>hello!&nbsp;&nbsp;&nbsp;&nbsp;{{user_name}}さん.</p>
+<p class="prompt_message_text">hello!&nbsp;&nbsp;&nbsp;&nbsp;{{user_name}}さん.</p>
 <br>
-<form method="post" enctype="multipart/form-data">
-<div class="form-group">
-<input type="text" class="form-control" name="sent_msg_txt" required>
-<br>
-<br>
-<br>
-<input type="file" class="form-control" name="sent_msg_img" accept="image/*" required>
-<br>
-<br>
-<br>
-<input type="submit" class="btn btn-primary" value="メッセージを送る">
+<div class="login-form">
+<p id="RealtimeClockArea2" class="RealtimeClockArea2" style="text-align: center;">--:--:--</p>
 </div>
+<br>
+<div class="login-form">
+<form method="post">
+<table align="center">
+<tr>
+<td><input name="attendance" type="submit" class="btn btn-primary btn-block" value="出勤"></td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td><input name="attendance" type="submit" class="btn btn-primary btn-block" value="退勤"></td>
+</tr>
+</table>
 </form>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
+</div>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p class="flash_message_text">{{message}}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <footer class="footer">
 <div class="container text-center">
-<p class="text-muted">Copyright &copy; 2023  moriaki1983  All rights reserved.</p>
+<p class="text-muted">Copyright &copy; 2023  GIFT-PLACE  All rights reserved.</p>
 </div>
 </footer>
-<script type="text/javascript" src="{{url_for("static", filename="jquery/jquery-3.6.4.js")}}"></script>
-<script type="text/javascript" src="{{url_for("static", filename="bootstrap(popper_bundled)/js/bootstrap.bundle.js")}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='jquery/jquery-3.6.4.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='bootstrap(popper_bundled)/js/bootstrap.bundle.js')}}"></script>
 <script type="text/javascript">
 var btn=$('.footer');
 $(window).scroll(function(){if ($(this).scrollTop() > 80){btn.fadeIn();} else {btn.fadeOut();}});
 btn.click(function(){$('body,html').animate({scrollTop: 0},500); return false;});
+</script>
+<script type="text/javascript">
+function set2fig(num) {
+var ret;
+if( num < 10 ) { ret = "0" + num; }
+else { ret = num; }
+return ret;
+}
+function showClock2() {
+var nowTime = new Date();
+var nowHour = set2fig( nowTime.getHours() );
+var nowMin  = set2fig( nowTime.getMinutes() );
+var nowSec  = set2fig( nowTime.getSeconds() );
+var msg = nowHour + ":" + nowMin + ":" + nowSec;
+document.getElementById("RealtimeClockArea2").innerHTML = msg;
+}
+setInterval('showClock2()',1000);
 </script>
 </body>
 </html>
