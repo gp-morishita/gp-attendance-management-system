@@ -204,7 +204,6 @@ def admin_login():
             return render_template("admin_login.html")
 
         session["is_admin"] = True
-        session["logged_in"] = True
         app.permanent_session_lifetime = timedelta(minutes=30)
 
         return redirect(url_for("admin_prompt"))
@@ -223,21 +222,19 @@ def show_users():
 
         if "logged_in" not in session:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
         elif session["logged_in"] == False:
 
-            return redirect(url_for("index"))
-
-    if request.method == "GET":
+            return redirect(url_for("admin_login"))
 
         if "is_admin" not in session:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
         elif session["is_admin"] == False:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
     conn = sqlite3.connect("app_usrs.db")
     cur = conn.cursor()
@@ -274,21 +271,19 @@ def show_attendance():
 
         if "logged_in" not in session:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
         elif session["logged_in"] == False:
 
-            return redirect(url_for("index"))
-
-    if request.method == "GET":
+            return redirect(url_for("admin_login"))
 
         if "is_admin" not in session:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
         elif session["is_admin"] == False:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
         conn = sqlite3.connect("app_tmm.db")
         cur = conn.cursor()
@@ -316,30 +311,32 @@ def show_attendance():
         return render_template("show_attendance.html", pagination=pgntn, page_data=pg_dat)
 
 
-# 「ecit_attendance」のURLエンドポイントを定義する
-@app.route("/edit_attendance", methods=["GET"])
+# 「edit_attendance」のURLエンドポイントを定義する
+@app.route("/edit_attendance", methods=["GET", "POST"])
 def edit_attendance():
-    itms = []
-
-    if request.method == "GET":
-
-        if "logged_in" not in session:
-
-            return redirect(url_for("index"))
-
-        elif session["logged_in"] == False:
-
-            return redirect(url_for("index"))
+    row_num = 0
 
     if request.method == "GET":
 
         if "is_admin" not in session:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
         elif session["is_admin"] == False:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
+
+        return render_template("edit_attendance.html")
+
+    if request.method == "POST":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
 
         conn = sqlite3.connect("app_tmm.db")
         cur = conn.cursor()
@@ -349,43 +346,116 @@ def edit_attendance():
         cur.execute(sql1)
         conn.commit()
 
-        sql2 = """SELECT * FROM attendance;"""
-        cur.execute(sql2)
+        sql2 = """SELECT id FROM attendance WHERE id=?;"""
+        cur.execute(sql2, [request.form["id"]])
 
         for row in cur.fetchall():
-            itms.append(row)
+            row_num = row_num + 1
+
+        if row_num == 0:
+
+            flash("そのIDは存在しません")
+
+            return render_template("edit_attendance.html")
+
+        sql3 = """UPDATE attendance SET usr_nm=?, bgn_dttm=?, end_dttm=? WHERE id=?;"""
+        cur.execute(
+            sql3, (request.form["user_name"], request.form["begin_datetime"], request.form["end_datetime"], request.form["id"]))
+        conn.commit()
 
         cur.close()
         conn.close()
 
+        flash("そのIDに対応する情報は変更しました")
+
         return render_template("edit_attendance.html")
 
 
-# 「export_to_csv」のURLエンドポイントを定義する
-@app.route("/export_to_csv", methods=["GET"])
-def export_to_csv():
-    itms = []
-    spr_itms = []
-
-    if request.method == "GET":
-
-        if "logged_in" not in session:
-
-            return redirect(url_for("index"))
-
-        elif session["logged_in"] == False:
-
-            return redirect(url_for("index"))
+# 「delete_attendance」のURLエンドポイントを定義する
+@app.route("/delete_attendance", methods=["GET", "POST"])
+def delete_attendance():
+    row_num = 0
 
     if request.method == "GET":
 
         if "is_admin" not in session:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
         elif session["is_admin"] == False:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
+
+        return render_template("delete_attendance.html")
+
+    if request.method == "POST":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        conn = sqlite3.connect("app_tmm.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                        usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
+        sql2 = """SELECT id FROM attendance WHERE id=?;"""
+        cur.execute(sql2, [request.form["id"]])
+
+        for row in cur.fetchall():
+            row_num = row_num + 1
+
+        if row_num == 0:
+
+            flash("そのIDは存在しません")
+
+            return render_template("delete_attendance.html")
+
+        sql3 = """UPDATE attendance SET usr_nm="ERASED", bgn_dttm="ERASED", end_dttm="ERASED" WHERE id=?;"""
+        cur.execute(sql3, [request.form["id"]])
+        conn.commit()
+
+        cur.close()
+        conn.close()
+
+        flash("そのIDに対応する情報は削除しました")
+
+        return render_template("delete_attendance.html")
+
+
+# 「export_to_csv」のURLエンドポイントを定義する
+@app.route("/export_to_csv", methods=["GET"])
+def export_to_csv():
+    spr_itms = []
+
+    if request.method == "GET":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        return render_template("export_to_csv.html")
+
+    if request.method == "POST":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
 
     try:
         os.remove(DOWNLOAD_PATH)
@@ -432,7 +502,6 @@ def download():
 # 「prompt」のURLエンドポイントを定義する
 @app.route("/prompt", methods=["GET", "POST"])
 def prompt():
-    itms = []
     row_id = -1
 
     if request.method == "GET":
@@ -511,14 +580,10 @@ def prompt():
 
         if row_id != -1:
             sql5 = """UPDATE attendance SET usr_nm=?, end_dttm=? WHERE id=?;"""
-            # crrnt_tm_in_asa_tky = datetime.datetime.now(
-            #    pytz.timezone("Asia/Tokyo"))
-            t_delta = datetime.timedelta(hours=9)
-            JST = datetime.timezone(t_delta, "JST")
-            now = datetime.datetime.now(JST)
-            frmttd_dttm = now.strftime("%Y/%m/%d %H:%M:%S")
+            crrnt_tm_in_asa_tky = datetime.datetime.now(
+                pytz.timezone("Asia/Tokyo"))
             cur.execute(sql5, (session["user_name"],
-                        frmttd_dttm, row_id))
+                        crrnt_tm_in_asa_tky, row_id))
             conn.commit()
 
             cur.close()
@@ -541,21 +606,13 @@ def admin_prompt():
 
     if request.method == "GET":
 
-        if "logged_in" not in session:
-
-            return redirect(url_for("index"))
-
-        elif session["logged_in"] == False:
-
-            return redirect(url_for("index"))
-
         if "is_admin" not in session:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
         elif session["is_admin"] == False:
 
-            return redirect(url_for("index"))
+            return redirect(url_for("admin_login"))
 
         return render_template("admin_prompt.html")
 
