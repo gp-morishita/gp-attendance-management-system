@@ -220,14 +220,6 @@ def show_users():
 
     if request.method == "GET":
 
-        if "logged_in" not in session:
-
-            return redirect(url_for("admin_login"))
-
-        elif session["logged_in"] == False:
-
-            return redirect(url_for("admin_login"))
-
         if "is_admin" not in session:
 
             return redirect(url_for("admin_login"))
@@ -268,14 +260,6 @@ def show_attendance():
     itms = []
 
     if request.method == "GET":
-
-        if "logged_in" not in session:
-
-            return redirect(url_for("admin_login"))
-
-        elif session["logged_in"] == False:
-
-            return redirect(url_for("admin_login"))
 
         if "is_admin" not in session:
 
@@ -457,39 +441,37 @@ def export_to_csv():
 
             return redirect(url_for("admin_login"))
 
-    try:
-        os.remove(DOWNLOAD_PATH)
-    except FileNotFoundError:
-        pass
+        try:
+            os.remove(DOWNLOAD_PATH)
+        except FileNotFoundError:
+            pass
 
-    conn = sqlite3.connect("app_tmm.db")
-    cur = conn.cursor()
+        conn = sqlite3.connect("app_tmm.db")
+        cur = conn.cursor()
 
-    sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                                      usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
-    cur.execute(sql1)
-    conn.commit()
+        cur.execute(sql1)
+        conn.commit()
 
-    sql2 = """SELECT * FROM attendance;"""
-    cur.execute(sql2)
+        sql2 = """SELECT * FROM attendance;"""
+        cur.execute(sql2)
 
-    for row in cur.fetchall():
-        buf = str(row[0]) + ", " + row[1] + ", " + \
-            row[2] + ", " + row[3] + "\n"
-        spr_itms.append(buf)
+        for row in cur.fetchall():
+            buf = str(row[0]) + ", " + row[1] + ", " + \
+                row[2] + ", " + row[3] + "\n"
+            spr_itms.append(buf)
 
-    cur.close()
-    conn.close()
+        cur.close()
+        conn.close()
 
-    print(spr_itms)
+        fl = open(DOWNLOAD_PATH, "x", encoding="UTF-8")
 
-    fl = open(DOWNLOAD_PATH, "x", encoding="UTF-8")
+        fl.writelines(spr_itms)
 
-    fl.writelines(spr_itms)
+        fl.close()
 
-    fl.close()
-
-    return render_template("export_to_csv.html")
+        return render_template("export_to_csv.html")
 
 
 # 「download」のURLエンドポイントを定義する
