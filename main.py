@@ -55,7 +55,7 @@ def index():
             cur.close()
             conn.close()
 
-            flash("そのユーザー名は登録されていません！")
+            flash("そのユーザー名は登録されていません")
 
             return render_template("index.html")
 
@@ -122,7 +122,7 @@ def signin():
 
         for row in cur.fetchall():
             if row == (request.form["username"],):
-                flash("そのユーザー名は既に登録されています！")
+                flash("そのユーザー名は既に登録されています")
                 cur.close()
                 conn.close()
 
@@ -171,7 +171,7 @@ def signout():
             cur.close()
             conn.close()
 
-            flash("そのユーザー名は登録されていません！")
+            flash("そのユーザー名は登録されていません")
 
             return render_template("signout.html")
 
@@ -585,6 +585,6 @@ def admin_prompt():
         return render_template("admin_prompt.html")
 
 
-# 当該モジュールが実行起点かどうかを確認した上で、Flask本体を起動する
+# 当該モジュールが実行起点かどうかを確認した上でFlask本体を起動する
 if __name__ == '__main__':
     app.run(debug=True, host="localhost", port=5000)
