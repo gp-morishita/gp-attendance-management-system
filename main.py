@@ -16,7 +16,7 @@ from flask_paginate import Pagination, get_page_parameter
 ADMIN_PASSWORD = "secret"
 
 # ダウンロードファイルのパスを宣言する
-DOWNLOAD_PATH = "etc/export_attendance.csv"
+DOWNLOAD_PATH = "cache_data/export_attendance.csv"
 
 
 # Flask本体を構築する
@@ -59,15 +59,15 @@ def index():
 
             return render_template("index.html")
 
-        sql3 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-        cur.execute(sql3, [request.form["password"]])
+        sql3 = """SELECT psswrd FROM users WHERE usr_nm=?;"""
+        cur.execute(sql3, [request.form["username"]])
 
         for row in cur.fetchall():
-            if row != request.form["password"]:
+            if row != (request.form["password"],):
                 cur.close()
                 conn.close()
 
-                flash("そのパスワードは間違っています！")
+                flash("そのパスワードは間違っています")
 
                 return render_template("index.html")
 
@@ -220,14 +220,6 @@ def show_users():
 
     if request.method == "GET":
 
-        if "logged_in" not in session:
-
-            return redirect(url_for("admin_login"))
-
-        elif session["logged_in"] == False:
-
-            return redirect(url_for("admin_login"))
-
         if "is_admin" not in session:
 
             return redirect(url_for("admin_login"))
@@ -268,14 +260,6 @@ def show_attendance():
     itms = []
 
     if request.method == "GET":
-
-        if "logged_in" not in session:
-
-            return redirect(url_for("admin_login"))
-
-        elif session["logged_in"] == False:
-
-            return redirect(url_for("admin_login"))
 
         if "is_admin" not in session:
 
@@ -445,51 +429,37 @@ def export_to_csv():
 
             return redirect(url_for("admin_login"))
 
-        return render_template("export_to_csv.html")
+        try:
+            os.remove(DOWNLOAD_PATH)
+        except FileNotFoundError:
+            pass
 
-    if request.method == "POST":
+        conn = sqlite3.connect("app_tmm.db")
+        cur = conn.cursor()
 
-        if "is_admin" not in session:
-
-            return redirect(url_for("admin_login"))
-
-        elif session["is_admin"] == False:
-
-            return redirect(url_for("admin_login"))
-
-    try:
-        os.remove(DOWNLOAD_PATH)
-    except FileNotFoundError:
-        pass
-
-    conn = sqlite3.connect("app_tmm.db")
-    cur = conn.cursor()
-
-    sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                                      usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
-    cur.execute(sql1)
-    conn.commit()
+        cur.execute(sql1)
+        conn.commit()
 
-    sql2 = """SELECT * FROM attendance;"""
-    cur.execute(sql2)
+        sql2 = """SELECT * FROM attendance;"""
+        cur.execute(sql2)
 
-    for row in cur.fetchall():
-        buf = str(row[0]) + ", " + row[1] + ", " + \
-            row[2] + ", " + row[3] + "\n"
-        spr_itms.append(buf)
+        for row in cur.fetchall():
+            buf = str(row[0]) + ", " + row[1] + ", " + \
+                row[2] + ", " + row[3] + "\n"
+            spr_itms.append(buf)
 
-    cur.close()
-    conn.close()
+        cur.close()
+        conn.close()
 
-    print(spr_itms)
+        fl = open(DOWNLOAD_PATH, "x", encoding="UTF-8")
 
-    fl = open(DOWNLOAD_PATH, "x", encoding="UTF-8")
+        fl.writelines(spr_itms)
 
-    fl.writelines(spr_itms)
+        fl.close()
 
-    fl.close()
-
-    return render_template("export_to_csv.html")
+        return render_template("export_to_csv.html")
 
 
 # 「download」のURLエンドポイントを定義する
@@ -502,7 +472,8 @@ def download():
 # 「prompt」のURLエンドポイントを定義する
 @app.route("/prompt", methods=["GET", "POST"])
 def prompt():
-    row_id = -1
+    row_num = 0
+    row_id = 0
 
     if request.method == "GET":
 
@@ -532,25 +503,31 @@ def prompt():
     cur = conn.cursor()
 
     sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                                     usr_nm TEXT NOT NULL, bgn_dttm TEXT, end_dttm TEXT);"""
+                                                     usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
     cur.execute(sql1)
     conn.commit()
 
     if request.form["attendance"] == "出勤":
 
-        sql2 = """SELECT * FROM attendance;"""
-        cur.execute(sql2)
+        sql2 = """SELECT * FROM attendance WHERE usr_nm=?;"""
+        cur.execute(sql2, [session["user_name"]])
 
         for row in cur.fetchall():
-            if row[3] == "未決定":
-                row_id = row[0]
+            if row[3] == "UNDECIDED":
 
-        if row_id == -1:
+                flash("出勤日時は既に記録されています")
+                return render_template("prompt.html", user_name=session["user_name"])
+
+        for row in cur.fetchall():
+            row_num = row_num + 1
+
+        if row_num == 0:
+
             sql3 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
             crrnt_tm_in_asa_tky = datetime.datetime.now(
                 pytz.timezone("Asia/Tokyo"))
             cur.execute(sql3, (session["user_name"],
-                        crrnt_tm_in_asa_tky, "未決定"))
+                        crrnt_tm_in_asa_tky, "UNDECIDED"))
             conn.commit()
 
             cur.close()
@@ -560,30 +537,21 @@ def prompt():
 
             return render_template("prompt.html", user_name=session["user_name"])
 
-        else:
-
-            cur.close()
-            conn.close()
-
-            flash("出勤日時は既に記録されています")
-
-            return render_template("prompt.html", user_name=session["user_name"])
-
     if request.form["attendance"] == "退勤":
 
-        sql4 = """SELECT * FROM attendance;"""
-        cur.execute(sql4)
+        sql4 = """SELECT * FROM attendance WHERE usr_nm=?;"""
+        cur.execute(sql4, [session["user_name"]])
 
         for row in cur.fetchall():
-            if row[3] == "未決定":
+            row_num = row_num + 1
+            if row[3] == "UNDECIDED":
                 row_id = row[0]
 
-        if row_id != -1:
-            sql5 = """UPDATE attendance SET usr_nm=?, end_dttm=? WHERE id=?;"""
+        if row_num != 0:
+            sql5 = """UPDATE attendance SET end_dttm=? WHERE id=?;"""
             crrnt_tm_in_asa_tky = datetime.datetime.now(
                 pytz.timezone("Asia/Tokyo"))
-            cur.execute(sql5, (session["user_name"],
-                        crrnt_tm_in_asa_tky, row_id))
+            cur.execute(sql5, (crrnt_tm_in_asa_tky, row_id))
             conn.commit()
 
             cur.close()

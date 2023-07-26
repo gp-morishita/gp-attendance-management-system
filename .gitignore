@@ -2,3 +2,5 @@
 /static/bootstrap(popper_bundled)
 /static/jquery
 /__pycache__
+/app_tmm.db
+/app_usrs.db
