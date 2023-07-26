@@ -429,18 +429,6 @@ def export_to_csv():
 
             return redirect(url_for("admin_login"))
 
-        return render_template("export_to_csv.html")
-
-    if request.method == "POST":
-
-        if "is_admin" not in session:
-
-            return redirect(url_for("admin_login"))
-
-        elif session["is_admin"] == False:
-
-            return redirect(url_for("admin_login"))
-
         try:
             os.remove(DOWNLOAD_PATH)
         except FileNotFoundError:
