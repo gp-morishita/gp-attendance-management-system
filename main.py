@@ -16,7 +16,7 @@ from flask_paginate import Pagination, get_page_parameter
 ADMIN_PASSWORD = "secret"
 
 # ダウンロードファイルのパスを宣言する
-DOWNLOAD_PATH = "etc/export_attendance.csv"
+DOWNLOAD_PATH = "cache_data/export_attendance.csv"
 
 
 # Flask本体を構築する
@@ -59,15 +59,15 @@ def index():
 
             return render_template("index.html")
 
-        sql3 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-        cur.execute(sql3, [request.form["password"]])
+        sql3 = """SELECT psswrd FROM users WHERE usr_nm=?;"""
+        cur.execute(sql3, [request.form["username"]])
 
         for row in cur.fetchall():
-            if row != request.form["password"]:
+            if row != (request.form["password"],):
                 cur.close()
                 conn.close()
 
-                flash("そのパスワードは間違っています！")
+                flash("そのパスワードは間違っています")
 
                 return render_template("index.html")
 
@@ -543,15 +543,15 @@ def prompt():
         cur.execute(sql4, [session["user_name"]])
 
         for row in cur.fetchall():
+            row_num = row_num + 1
             if row[3] == "UNDECIDED":
                 row_id = row[0]
 
-        if row_id != -1:
-            sql5 = """UPDATE attendance SET usr_nm=?, end_dttm=? WHERE id=?;"""
+        if row_num != 0:
+            sql5 = """UPDATE attendance SET end_dttm=? WHERE id=?;"""
             crrnt_tm_in_asa_tky = datetime.datetime.now(
                 pytz.timezone("Asia/Tokyo"))
-            cur.execute(sql5, (session["user_name"],
-                        crrnt_tm_in_asa_tky, row_id))
+            cur.execute(sql5, (crrnt_tm_in_asa_tky, row_id))
             conn.commit()
 
             cur.close()
