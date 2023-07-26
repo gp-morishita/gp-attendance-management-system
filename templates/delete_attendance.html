@@ -1,14 +1,15 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+ "http://www.w3.org/TR/html4/strict.dtd">
 <html lang="ja">
 <head>
-<meta http-equiv="content-type" content="text/html;charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"/>
-<meta name="description" content="GIFT-PLACEの勤怠管理システムです。" />
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+<meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
 <title>gp-attendance-management-system</title>
-<link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}"/>
-<linkrel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}"/>
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/bootstrap.css')}}"/>
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/sticky-footer.css')}}"/>
+<link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/bootstrap.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/sticky-footer.css')}}">
 </head>
 <body style="background-color:gray;">
 <header class="header">
@@ -26,32 +27,29 @@
 </div>
 </nav>
 </header>
+<div class="login-form">
+<form method="post">
+<h2 class="text-center">打刻削除</h2>
+<div class="form-group">
+<input name="id" type="text" class="form-control" placeholder="ID" required="required">
+</div>
+<div class="form-group">
+<button type="submit" class="btn btn-primary btn-block">決定</button>
+</div>
+</form>
+</div>
 <br>
 <br>
-<table class="table">
-<thead>
-<tr>
-<th scope="col1">ID</th>
-<th scope="col1">ユーザー名</th>
-<th scope="col1">出勤日時</th>
-<th scope="col1">退勤日時</th>
-</tr>
-</thead>
-<tbody>
-{% for item in page_data %}
-<tr>
-<td>{{item[0]}}</td>
-<td>{{item[1]}}</td>
-<td>{{item[2]}}</td>
-<td>{{item[3]}}</td>
-</tr>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p class="flash_message_text">{{message}}</p>
 {% endfor %}
-</tbody>
-</table>
-{{pagination.links}}
-<a class="btn btn-primary" href="{{url_for('edit_attendance')}}">打刻編集する</a>
-<a class="btn btn-primary" href="{{url_for('delete_attendance')}}">打刻削除する</a>
-<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">前の画面に戻る</a>
+{% endif %}
+{% endwith %}
+<br>
+<br>
+<a class="btn btn-primary" href="{{url_for('show_attendance')}}">前の画面に戻る</a>
 <br>
 <br>
 <footer class="footer">
