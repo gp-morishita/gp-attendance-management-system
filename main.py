@@ -85,24 +85,6 @@ def index():
         return render_template("index.html")
 
 
-# 「usage」のURLエンドポイントを定義する
-@app.route("/usage", methods=["GET"])
-def usage():
-
-    session.clear()
-
-    return render_template("usage.html")
-
-
-# 「about」のURLエンドポイントを定義する
-@app.route("/about", methods=["GET"])
-def about():
-
-    session.clear()
-
-    return render_template("about.html")
-
-
 # 「signin」のURLエンドポイントを定義する
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
@@ -543,8 +525,9 @@ def prompt():
         cur.execute(sql4, [session["user_name"]])
 
         for row in cur.fetchall():
-            row_num = row_num + 1
+
             if row[3] == "UNDECIDED":
+                row_num = row_num + 1
                 row_id = row[0]
 
         if row_num != 0:
