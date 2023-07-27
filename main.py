@@ -99,6 +99,8 @@ def register_user():
 
             return redirect(url_for("admin_login"))
 
+        return render_template("register_user.html")
+
     if request.method == "POST":
 
         if "is_admin" not in session:
@@ -154,6 +156,8 @@ def erasure_user():
         elif session["is_admin"] == False:
 
             return redirect(url_for("admin_login"))
+
+        return render_template("erasure_user.html")
 
     if request.method == "POST":
 
