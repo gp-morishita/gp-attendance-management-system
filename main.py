@@ -55,7 +55,7 @@ def index():
             cur.close()
             conn.close()
 
-            flash("そのユーザー名は登録されていません")
+            flash("そのユーザーは登録されていません")
 
             return render_template("index.html")
 
@@ -75,7 +75,7 @@ def index():
         conn.close()
 
         session["user_name"] = request.form["username"]
-        session["logged_in"] = True
+        session["is_logged_in"] = True
         app.permanent_session_lifetime = timedelta(minutes=30)
 
         return redirect(url_for("prompt"))
@@ -85,11 +85,31 @@ def index():
         return render_template("index.html")
 
 
-# 「signin」のURLエンドポイントを定義する
-@app.route("/signin", methods=["GET", "POST"])
-def signin():
+# 「register_user」のURLエンドポイントを定義する
+@app.route("/register_user", methods=["GET", "POST"])
+def register_user():
+
+    if request.method == "GET":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        return render_template("register_user.html")
 
     if request.method == "POST":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
 
         conn = sqlite3.connect("app_usrs.db")
         cur = conn.cursor()
@@ -104,11 +124,11 @@ def signin():
 
         for row in cur.fetchall():
             if row == (request.form["username"],):
-                flash("そのユーザー名は既に登録されています")
+                flash("そのユーザーは既に登録されています")
                 cur.close()
                 conn.close()
 
-                return render_template("signin.html")
+                return render_template("register_user.html")
 
         sql2 = """INSERT INTO users(usr_nm, psswrd) VALUES (?,?);"""
         cur.execute(sql2, (request.form["username"], request.form["password"]))
@@ -117,23 +137,37 @@ def signin():
         cur.close()
         conn.close()
 
-        session["user_name"] = request.form["username"]
-        session["logged_in"] = True
-        app.permanent_session_lifetime = timedelta(minutes=30)
+        flash("そのユーザーを登録しました")
 
-        return redirect(url_for("prompt"))
-
-    else:
-
-        return render_template("signin.html")
+        return render_template("register_user.html")
 
 
-# 「signout」のURLエンドポイントを定義する
-@app.route("/signout", methods=["GET", "POST"])
-def signout():
+# 「erasure_user」のURLエンドポイントを定義する
+@app.route("/erasure_user", methods=["GET", "POST"])
+def erasure_user():
     row_num = 0
 
+    if request.method == "GET":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        return render_template("erasure_user.html")
+
     if request.method == "POST":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
 
         conn = sqlite3.connect("app_usrs.db")
         cur = conn.cursor()
@@ -153,24 +187,20 @@ def signout():
             cur.close()
             conn.close()
 
-            flash("そのユーザー名は登録されていません")
+            flash("そのユーザーは登録されていません")
 
-            return render_template("signout.html")
+            return render_template("erasure_user.html")
 
-        sql1 = """UPDATE users SET usr_nm="ERASED", psswrd="ERASED" WHERE usr_nm=? AND psswrd=?;"""
-        cur.execute(sql1, (request.form["username"], request.form["password"]))
+        sql1 = """UPDATE users SET usr_nm="ERASED", psswrd="ERASED" WHERE usr_nm=?;"""
+        cur.execute(sql1, [request.form["username"]])
         conn.commit()
 
         cur.close()
         conn.close()
 
-        session.clear()
+        flash("そのユーザーを抹消しました")
 
-        return redirect(url_for("index"))
-
-    else:
-
-        return render_template("signout.html")
+        return render_template("erasure_user.html")
 
 
 # 「admin_login」のURLエンドポイントを定義する
@@ -277,9 +307,9 @@ def show_attendance():
         return render_template("show_attendance.html", pagination=pgntn, page_data=pg_dat)
 
 
-# 「edit_attendance」のURLエンドポイントを定義する
-@app.route("/edit_attendance", methods=["GET", "POST"])
-def edit_attendance():
+# 「modify_attendance」のURLエンドポイントを定義する
+@app.route("/modify_attendance", methods=["GET", "POST"])
+def modify_attendance():
     row_num = 0
 
     if request.method == "GET":
@@ -292,7 +322,7 @@ def edit_attendance():
 
             return redirect(url_for("admin_login"))
 
-        return render_template("edit_attendance.html")
+        return render_template("modify_attendance.html")
 
     if request.method == "POST":
 
@@ -322,7 +352,7 @@ def edit_attendance():
 
             flash("そのIDは存在しません")
 
-            return render_template("edit_attendance.html")
+            return render_template("modify_attendance.html")
 
         sql3 = """UPDATE attendance SET usr_nm=?, bgn_dttm=?, end_dttm=? WHERE id=?;"""
         cur.execute(
@@ -332,14 +362,14 @@ def edit_attendance():
         cur.close()
         conn.close()
 
-        flash("そのIDに対応する情報は変更しました")
+        flash("そのIDに対応する情報を修正しました")
 
-        return render_template("edit_attendance.html")
+        return render_template("modify_attendance.html")
 
 
-# 「delete_attendance」のURLエンドポイントを定義する
-@app.route("/delete_attendance", methods=["GET", "POST"])
-def delete_attendance():
+# 「erasure_attendance」のURLエンドポイントを定義する
+@app.route("/erasure_attendance", methods=["GET", "POST"])
+def erasure_attendance():
     row_num = 0
 
     if request.method == "GET":
@@ -352,7 +382,7 @@ def delete_attendance():
 
             return redirect(url_for("admin_login"))
 
-        return render_template("delete_attendance.html")
+        return render_template("erasure_attendance.html")
 
     if request.method == "POST":
 
@@ -382,7 +412,7 @@ def delete_attendance():
 
             flash("そのIDは存在しません")
 
-            return render_template("delete_attendance.html")
+            return render_template("erasure_attendance.html")
 
         sql3 = """UPDATE attendance SET usr_nm="ERASED", bgn_dttm="ERASED", end_dttm="ERASED" WHERE id=?;"""
         cur.execute(sql3, [request.form["id"]])
@@ -391,9 +421,9 @@ def delete_attendance():
         cur.close()
         conn.close()
 
-        flash("そのIDに対応する情報は削除しました")
+        flash("そのIDに対応する情報を抹消しました")
 
-        return render_template("delete_attendance.html")
+        return render_template("erasure_attendance.html")
 
 
 # 「export_to_csv」のURLエンドポイントを定義する
@@ -459,11 +489,11 @@ def prompt():
 
     if request.method == "GET":
 
-        if "logged_in" not in session:
+        if "is_logged_in" not in session:
 
             return redirect(url_for("index"))
 
-        elif session["logged_in"] == False:
+        elif session["is_logged_in"] == False:
 
             return redirect(url_for("index"))
 
@@ -473,11 +503,11 @@ def prompt():
 
     if request.method == "POST":
 
-        if "logged_in" not in session:
+        if "is_logged_in" not in session:
 
             return redirect(url_for("index"))
 
-        elif session["logged_in"] == False:
+        elif session["is_logged_in"] == False:
 
             return redirect(url_for("index"))
 
