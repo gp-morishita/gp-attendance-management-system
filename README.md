@@ -1,1 +1,0 @@
-# gp-attendance-management-system

@@ -7,17 +7,18 @@ import flask
 import sqlite3
 import datetime
 import pytz
+import threading
+import webbrowser
 from datetime import timedelta
 from flask import Flask, render_template, request, url_for, redirect, session, flash, send_file
 from flask_paginate import Pagination, get_page_parameter
 
 
 # 管理者用パスワードを宣言する
-ADMIN_PASSWORD = "secret"
+ADMIN_PASSWORD = "gp1192"
 
 # ダウンロードファイルのパスを宣言する
 DOWNLOAD_PATH = "cache_data/export_attendance.csv"
-
 
 # Flask本体を構築する
 app = flask.Flask(__name__, static_folder="static",
@@ -74,7 +75,7 @@ def index():
         cur.close()
         conn.close()
 
-        session["user_name"] = request.form["username"]
+        session["username"] = request.form["username"]
         session["is_logged_in"] = True
         app.permanent_session_lifetime = timedelta(minutes=30)
 
@@ -83,6 +84,84 @@ def index():
     else:
 
         return render_template("index.html")
+
+
+# 「modify_user」のURLエンドポイントを定義する
+@app.route("/modify_user", methods=["GET", "POST"])
+def modify_user():
+    itms = []
+    row_num = 0
+
+    if request.method == "GET":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        conn = sqlite3.connect("app_usrs.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                        usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
+        sql2 = """SELECT * FROM users WHERE id=?;"""
+
+        cur.execute(sql2, [session["item-number"]])
+
+        for row in cur.fetchall():
+            itms.append(row)
+
+        return render_template("modify_user.html", usr_info=itms)
+
+    if request.method == "POST":
+
+        if "is_admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is_admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        conn = sqlite3.connect("app_usrs.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, psswrd TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
+        sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
+        cur.execute(sql2, [request.form["username"]])
+
+        for row in cur.fetchall():
+            row_num = row_num + 1
+
+        if row_num > 0:
+            cur.close()
+            conn.close()
+
+            flash("そのユーザーは既に登録されています")
+
+            return render_template("modify_user.html")
+
+        sql3 = """UPDATE users SET usr_nm=?, psswrd=? WHERE id=?;"""
+        cur.execute(
+            sql3, (request.form["username"], request.form["password"], session["item-number"]))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+
+        flash("そのユーザー情報を修正しました")
+
+        return render_template("modify_user.html")
 
 
 # 「register_user」のURLエンドポイントを定義する
@@ -207,6 +286,12 @@ def erasure_user():
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
 
+    session.clear()
+
+    if request.method == "GET":
+
+        return render_template("admin_login.html")
+
     if request.method == "POST":
 
         if ADMIN_PASSWORD != request.form["password"]:
@@ -220,13 +305,9 @@ def admin_login():
 
         return redirect(url_for("admin_prompt"))
 
-    else:
-
-        return render_template("admin_login.html")
-
 
 # 「show_users」のURLエンドポイントを定義する
-@app.route("/show_users", methods=["GET"])
+@app.route("/show_users", methods=["GET", "POST"])
 def show_users():
     itms = []
 
@@ -240,30 +321,36 @@ def show_users():
 
             return redirect(url_for("admin_login"))
 
-    conn = sqlite3.connect("app_usrs.db")
-    cur = conn.cursor()
+        conn = sqlite3.connect("app_usrs.db")
+        cur = conn.cursor()
 
-    sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                                 usr_nm TEXT NOT NULL, psswrd TEXT NOT NULL);"""
-    cur.execute(sql1)
-    conn.commit()
+        cur.execute(sql1)
+        conn.commit()
 
-    sql2 = """SELECT * From users;"""
-    cur.execute(sql2)
+        sql2 = """SELECT * From users;"""
+        cur.execute(sql2)
 
-    for row in cur.fetchall():
-        itms.append(row)
+        for row in cur.fetchall():
+            itms.append(row)
 
-    cur.close()
-    conn.close()
+        cur.close()
+        conn.close()
 
-    per_pg = 8
-    pg = request.args.get(get_page_parameter(), type=int, default=1)
-    pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
-    pgntn = Pagination(page=pg, total=len(
-        itms), per_page=per_pg, css_framework="bootstrap4")
+        per_pg = 8
+        pg = request.args.get(get_page_parameter(), type=int, default=1)
+        pg_dat = itms[(pg - 1) * per_pg: pg * per_pg]
+        pgntn = Pagination(page=pg, total=len(
+            itms), per_page=per_pg, css_framework="bootstrap4")
 
-    return render_template("show_users.html", pagination=pgntn, page_data=pg_dat)
+        return render_template("show_users.html", page_data=pg_dat, pagination=pgntn)
+
+    if request.method == "POST":
+        session["item-number"] = request.form["hidden-item-number"]
+        print(session["item-number"])
+
+        return redirect(url_for("modify_user"))
 
 
 # 「show_attendance」のURLエンドポイントを定義する
@@ -499,7 +586,7 @@ def prompt():
 
         else:
 
-            return render_template("prompt.html", user_name=session["user_name"])
+            return render_template("prompt.html", user_name=session["username"])
 
     if request.method == "POST":
 
@@ -522,13 +609,13 @@ def prompt():
     if request.form["attendance"] == "出勤":
 
         sql2 = """SELECT * FROM attendance WHERE usr_nm=?;"""
-        cur.execute(sql2, [session["user_name"]])
+        cur.execute(sql2, [session["username"]])
 
         for row in cur.fetchall():
             if row[3] == "UNDECIDED":
 
                 flash("出勤日時は既に記録されています")
-                return render_template("prompt.html", user_name=session["user_name"])
+                return render_template("prompt.html", user_name=session["username"])
 
         for row in cur.fetchall():
             row_num = row_num + 1
@@ -538,7 +625,7 @@ def prompt():
             sql3 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
             crrnt_tm_in_asa_tky = datetime.datetime.now(
                 pytz.timezone("Asia/Tokyo"))
-            cur.execute(sql3, (session["user_name"],
+            cur.execute(sql3, (session["username"],
                         crrnt_tm_in_asa_tky, "UNDECIDED"))
             conn.commit()
 
@@ -547,12 +634,12 @@ def prompt():
 
             flash("出勤日時を記録しました")
 
-            return render_template("prompt.html", user_name=session["user_name"])
+            return render_template("prompt.html", user_name=session["username"])
 
     if request.form["attendance"] == "退勤":
 
         sql4 = """SELECT * FROM attendance WHERE usr_nm=?;"""
-        cur.execute(sql4, [session["user_name"]])
+        cur.execute(sql4, [session["username"]])
 
         for row in cur.fetchall():
 
@@ -572,13 +659,13 @@ def prompt():
 
             flash("退勤日時を記録しました")
 
-            return render_template("prompt.html", user_name=session["user_name"])
+            return render_template("prompt.html", user_name=session["username"])
 
         else:
 
             flash("出勤日時が記録されていません")
 
-            return render_template("prompt.html", user_name=session["user_name"])
+            return render_template("prompt.html", user_name=session["username"])
 
 
 # 「admin_prompt」のURLエンドポイントを定義する
@@ -598,6 +685,11 @@ def admin_prompt():
         return render_template("admin_prompt.html")
 
 
+def main():
+    session.clear()
+
+
 # 当該モジュールが実行起点かどうかを確認した上でFlask本体を起動する
 if __name__ == '__main__':
+
     app.run(debug=True, host="localhost", port=5000)

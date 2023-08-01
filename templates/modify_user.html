@@ -29,39 +29,37 @@
 </div>
 </nav>
 </header>
-<table class="table">
-<thead>
-<tr>
-<th scope="col1">ID</th>
-<th scope="col1">ユーザー名</th>
-<th scope="col1">パスワード</th>
-<th scope="col1">項目操作</th>
-</tr>
-</thead>
-<tbody>
+{% for item in usr_info %}
+<div class="login-form">
 <form method="post">
-{% for item in page_data %}
-<tr>
-<td>{{item[0]}}</td>
-<td>{{item[1]}}</td>
-<td>{{item[2]}}</td>
-<td><input id="{{item[0]}}" name="item-number-{{item[0]}}" type="submit" class="btn btn-primary btn-block" value="修正" onclick="document.getElementById('hidden-item-number').value = '{{item[0]}}';"/></td>
-</tr>
-{% endfor %}
-<input id="hidden-item-number" name="hidden-item-number" type="hidden" value="none"></input>
-</form>
-</tbody>
-</table>
-{{pagination.links}}
-<a class="btn btn-primary" href="{{url_for('register_user')}}">ユーザー登録する</a>
-<a class="btn btn-primary" href="{{url_for('erasure_user')}}">ユーザー抹消する</a>
-<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">前の画面に戻る</a>
-<br>
-<br>
-<footer class="footer">
-<div class="container text-center">
-<p class="text-muted">Copyright &copy; 2023  GIFT-PLACE  All rights reserved.</p>
+<h2 class="text-center">ユーザー修正</h2>
+<div class="form-group">
+<h1 class="text-center">ID: {{item[0]}}</h2>
+<input name="username" type="text" class="form-control" placeholder="ユーザー名" required="required" value="{{item[1]}}">
 </div>
+<div class="form-group">
+<input  name="password" type="text" class="form-control" placeholder="パスワード" required="required" value="{{item[2]}}">
+</div>
+<div class="form-group">
+<button type="submit" class="btn btn-primary btn-block">決定</button>
+</div>
+</form>
+</div>
+{% endfor %}
+<br>
+<br>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p class="flash_message_text">{{message}}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<br>
+<br>
+<a class="btn btn-primary" href="{{url_for('show_users')}}">前の画面に戻る</a>
+<br>
+<br>
 </footer>
 <script type="text/javascript" src="{{url_for('static', filename='jquery/jquery-3.6.4.js')}}"></script>
 <script type="text/javascript" src="{{url_for('static', filename='bootstrap(popper_bundled)/js/bootstrap.bundle.js')}}"></script>
@@ -69,11 +67,6 @@
 var btn=$('.footer');
 $(window).scroll(function(){if ($(this).scrollTop() > 80){btn.fadeIn();} else {btn.fadeOut();}});
 btn.click(function(){$('body,html').animate({scrollTop: 0},500); return false;});
-</script>
-<script type="text/javascript">
-document.getElementById("text-button").onclick = function() {
-  document.getElementById("text").innerHTML = "クリックされた！";
-};
 </script>
 </body>
 </html>
