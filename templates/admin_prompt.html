@@ -22,13 +22,7 @@
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
-<a class="nav-link" href="{{url_for('show_users')}}">ユーザー情報</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for('register_user')}}">ユーザー登録</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="{{url_for('erasure_user')}}">ユーザー抹消</a>
+<a class="nav-link" href="{{url_for('show_users')}}">ユーザー管理</a>
 </li>
 <li class="nav-item">
 <a class="nav-link" href="{{url_for('show_attendance')}}">打刻管理</a>
@@ -45,11 +39,11 @@
 </header>
 <br>
 <br>
-<p class="prompt_message_text">hello!&nbsp;&nbsp;&nbsp;&nbsp;管理者さん.</p>
+<p class="prompt_message_text">ようこそ&nbsp;&nbsp;&nbsp;&nbsp;管理者さん.</p>
 <br>
 <br>
 <div class="login-form">
-<p id="current_date" style="text-align: center;">--/--/--</p>
+<p id="current-date" style="text-align: center;">--/--/--</p>
 <p id="RealtimeClockArea2" class="RealtimeClockArea2" style="text-align: center;">--:--:--</p>
 </div>
 <br>
@@ -79,7 +73,7 @@ let month = now.getMonth() + 1;
 let date = now.getDate();
 let day_arr = ['日', '月', '火', '水', '木', '金', '土']
 let day = day_arr[now.getDay()];
-document.getElementById("current_date").innerHTML  = year + '年' + month + '月' + date + '日' + '（' + day + '）';
+document.getElementById("current-date").innerHTML  = year + '年' + month + '月' + date + '日' + '（' + day + '）';
 </script>
 <script type="text/javascript">
 function set2fig(num) {
