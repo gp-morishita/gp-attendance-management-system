@@ -3,7 +3,7 @@
 <html lang="ja">
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
 <title>gp-attendance-management-system</title>
 <link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
@@ -28,28 +28,23 @@
 </div>
 </nav>
 </header>
-{% for item in attendance_info %}
 <div class="login-form">
 <form method="post">
-<h2 class="text-center">打刻修正</h2>
+<h2 class="text-center">打刻登録</h2>
 <div class="form-group">
-<h2 class="text-center">ID: {{item[0]}}</h2>
+<input name="user-name" type="text" class="form-control" placeholder="ユーザー名" required="required" value="">
 </div>
 <div class="form-group">
-<input name="user-name" type="text" class="form-control" placeholder="ユーザー名" required="required" value="{{item[1]}}">
+<input name="begin-datetime" type="text" class="form-control" placeholder="出勤日時" required="required" value="">
 </div>
 <div class="form-group">
-<input name="begin-datetime" type="text" class="form-control" placeholder="出勤日時" required="required" value="{{item[2]}}">
-</div>
-<div class="form-group">
-<input name="end-datetime" type="text" class="form-control" placeholder="退勤日時" required="required" value="{{item[3]}}">
+<input name="end-datetime" type="text" class="form-control" placeholder="退勤日時" required="required" value="">
 </div>
 <div class="form-group">
 <button type="submit" class="btn btn-primary btn-block">決定</button>
 </div>
 </form>
 </div>
-{% endfor %}
 <br>
 <br>
 {% with messages = get_flashed_messages() %}

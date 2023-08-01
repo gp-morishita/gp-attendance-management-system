@@ -3,19 +3,17 @@
 
 # 既成のモジュールをインポートする
 import os
+import sys
 import flask
 import sqlite3
 import datetime
 import pytz
-import threading
-import webbrowser
 from datetime import timedelta
 from flask import Flask, render_template, request, url_for, redirect, session, flash, send_file
 from flask_paginate import Pagination, get_page_parameter
 
-
 # 管理者用パスワードを宣言する
-ADMIN_PASSWORD = "gp1192"
+ADMIN_PASS_WORD = "gp1192"
 
 # ダウンロードファイルのパスを宣言する
 DOWNLOAD_PATH = "cache_data/export_attendance.csv"
@@ -47,7 +45,7 @@ def index():
         conn.commit()
 
         sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-        cur.execute(sql2, [request.form["username"]])
+        cur.execute(sql2, [request.form["user-name"]])
 
         for row in cur.fetchall():
             row_num = row_num + 1
@@ -61,10 +59,10 @@ def index():
             return render_template("index.html")
 
         sql3 = """SELECT psswrd FROM users WHERE usr_nm=?;"""
-        cur.execute(sql3, [request.form["username"]])
+        cur.execute(sql3, [request.form["user-name"]])
 
         for row in cur.fetchall():
-            if row != (request.form["password"],):
+            if row != (request.form["pass-word"],):
                 cur.close()
                 conn.close()
 
@@ -75,8 +73,8 @@ def index():
         cur.close()
         conn.close()
 
-        session["username"] = request.form["username"]
-        session["is_logged_in"] = True
+        session["user-name"] = request.form["user-name"]
+        session["is-logged-in"] = True
         app.permanent_session_lifetime = timedelta(minutes=30)
 
         return redirect(url_for("prompt"))
@@ -94,11 +92,11 @@ def modify_user():
 
     if request.method == "GET":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -121,11 +119,11 @@ def modify_user():
 
     if request.method == "POST":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -138,7 +136,7 @@ def modify_user():
         conn.commit()
 
         sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-        cur.execute(sql2, [request.form["username"]])
+        cur.execute(sql2, [request.form["user-name"]])
 
         for row in cur.fetchall():
             row_num = row_num + 1
@@ -153,7 +151,7 @@ def modify_user():
 
         sql3 = """UPDATE users SET usr_nm=?, psswrd=? WHERE id=?;"""
         cur.execute(
-            sql3, (request.form["username"], request.form["password"], session["item-number"]))
+            sql3, (request.form["user-name"], request.form["pass-word"], session["item-number"]))
         conn.commit()
 
         cur.close()
@@ -170,11 +168,11 @@ def register_user():
 
     if request.method == "GET":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -182,11 +180,11 @@ def register_user():
 
     if request.method == "POST":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -199,10 +197,17 @@ def register_user():
         conn.commit()
 
         sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-        cur.execute(sql2, [request.form["username"]])
+        cur.execute(sql2, [request.form["user-name"]])
+
+        if "ERASED" == request.form["user-name"]:
+            flash("そのユーザーは登録できません")
+            cur.close()
+            conn.close()
+
+            return render_template("register_user.html")
 
         for row in cur.fetchall():
-            if row == (request.form["username"],):
+            if row == (request.form["user-name"],):
                 flash("そのユーザーは既に登録されています")
                 cur.close()
                 conn.close()
@@ -210,7 +215,8 @@ def register_user():
                 return render_template("register_user.html")
 
         sql2 = """INSERT INTO users(usr_nm, psswrd) VALUES (?,?);"""
-        cur.execute(sql2, (request.form["username"], request.form["password"]))
+        cur.execute(
+            sql2, (request.form["user-name"], request.form["pass-word"]))
         conn.commit()
 
         cur.close()
@@ -228,11 +234,11 @@ def erasure_user():
 
     if request.method == "GET":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -240,11 +246,11 @@ def erasure_user():
 
     if request.method == "POST":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -257,7 +263,7 @@ def erasure_user():
         conn.commit()
 
         sql2 = """SELECT usr_nm FROM users WHERE usr_nm=?;"""
-        cur.execute(sql2, [request.form["username"]])
+        cur.execute(sql2, [request.form["user-name"]])
 
         for row in cur.fetchall():
             row_num = row_num + 1
@@ -271,7 +277,7 @@ def erasure_user():
             return render_template("erasure_user.html")
 
         sql1 = """UPDATE users SET usr_nm="ERASED", psswrd="ERASED" WHERE usr_nm=?;"""
-        cur.execute(sql1, [request.form["username"]])
+        cur.execute(sql1, [request.form["user-name"]])
         conn.commit()
 
         cur.close()
@@ -294,13 +300,13 @@ def admin_login():
 
     if request.method == "POST":
 
-        if ADMIN_PASSWORD != request.form["password"]:
+        if ADMIN_PASS_WORD != request.form["pass-word"]:
 
             flash("そのパスワードは間違っています")
 
             return render_template("admin_login.html")
 
-        session["is_admin"] = True
+        session["is-admin"] = True
         app.permanent_session_lifetime = timedelta(minutes=30)
 
         return redirect(url_for("admin_prompt"))
@@ -313,11 +319,11 @@ def show_users():
 
     if request.method == "GET":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -347,24 +353,32 @@ def show_users():
         return render_template("show_users.html", page_data=pg_dat, pagination=pgntn)
 
     if request.method == "POST":
+
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
         session["item-number"] = request.form["hidden-item-number"]
-        print(session["item-number"])
 
         return redirect(url_for("modify_user"))
 
 
 # 「show_attendance」のURLエンドポイントを定義する
-@app.route("/show_attendance", methods=["GET"])
+@app.route("/show_attendance", methods=["GET", "POST"])
 def show_attendance():
     itms = []
 
     if request.method == "GET":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -393,31 +407,33 @@ def show_attendance():
 
         return render_template("show_attendance.html", pagination=pgntn, page_data=pg_dat)
 
+    if request.method == "POST":
+
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        session["item-number"] = request.form["hidden-item-number"]
+
+        return redirect(url_for("modify_attendance"))
+
 
 # 「modify_attendance」のURLエンドポイントを定義する
 @app.route("/modify_attendance", methods=["GET", "POST"])
 def modify_attendance():
-    row_num = 0
+    itms = []
 
     if request.method == "GET":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
-
-            return redirect(url_for("admin_login"))
-
-        return render_template("modify_attendance.html")
-
-    if request.method == "POST":
-
-        if "is_admin" not in session:
-
-            return redirect(url_for("admin_login"))
-
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -429,29 +445,93 @@ def modify_attendance():
         cur.execute(sql1)
         conn.commit()
 
-        sql2 = """SELECT id FROM attendance WHERE id=?;"""
-        cur.execute(sql2, [request.form["id"]])
+        sql2 = """SELECT * FROM attendance WHERE id=?;"""
+        cur.execute(sql2, [session["item-number"]])
 
         for row in cur.fetchall():
-            row_num = row_num + 1
+            itms.append(row)
 
-        if row_num == 0:
+        cur.close()
+        conn.close()
 
-            flash("そのIDは存在しません")
+        return render_template("modify_attendance.html", attendance_info=itms)
 
-            return render_template("modify_attendance.html")
+    if request.method == "POST":
 
-        sql3 = """UPDATE attendance SET usr_nm=?, bgn_dttm=?, end_dttm=? WHERE id=?;"""
-        cur.execute(
-            sql3, (request.form["user_name"], request.form["begin_datetime"], request.form["end_datetime"], request.form["id"]))
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        conn = sqlite3.connect("app_tmm.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                        usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
+        sql2 = """UPDATE attendance SET usr_nm=?, bgn_dttm=?, end_dttm=? WHERE id=?;"""
+        cur.execute(sql2, (request.form["user-name"], request.form["begin-datetime"],
+                    request.form["end-datetime"], session["item-number"]))
         conn.commit()
 
         cur.close()
         conn.close()
 
-        flash("そのIDに対応する情報を修正しました")
+        flash("勤怠情報を修正しました")
 
         return render_template("modify_attendance.html")
+
+
+# 「register_attendance」のURLエンドポイントを定義する
+@app.route("/register_attendance", methods=["GET", "POST"])
+def register_attendance():
+
+    if request.method == "GET":
+
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        return render_template("register_attendance.html")
+
+    if request.method == "POST":
+
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        conn = sqlite3.connect("app_tmm.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                        usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
+        sql2 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
+        cur.execute(sql2, (request.form["user-name"],
+                           request.form["begin-datetime"], request.form["end-datetime"]))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+
+        flash("勤怠情報を記録しました")
+
+        return render_template("register_attendance.html")
 
 
 # 「erasure_attendance」のURLエンドポイントを定義する
@@ -461,11 +541,11 @@ def erasure_attendance():
 
     if request.method == "GET":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -473,11 +553,11 @@ def erasure_attendance():
 
     if request.method == "POST":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -520,11 +600,11 @@ def export_to_csv():
 
     if request.method == "GET":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
@@ -564,6 +644,15 @@ def export_to_csv():
 # 「download」のURLエンドポイントを定義する
 @app.route("/download", methods=["GET"])
 def download():
+    if request.method == "GET":
+
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
 
     return send_file(DOWNLOAD_PATH, as_attachment=True)
 
@@ -576,25 +665,25 @@ def prompt():
 
     if request.method == "GET":
 
-        if "is_logged_in" not in session:
+        if "is-logged-in" not in session:
 
             return redirect(url_for("index"))
 
-        elif session["is_logged_in"] == False:
+        elif session["is-logged-in"] == False:
 
             return redirect(url_for("index"))
 
         else:
 
-            return render_template("prompt.html", user_name=session["username"])
+            return render_template("prompt.html", user_name=session["user-name"])
 
     if request.method == "POST":
 
-        if "is_logged_in" not in session:
+        if "is-logged-in" not in session:
 
             return redirect(url_for("index"))
 
-        elif session["is_logged_in"] == False:
+        elif session["is-logged-in"] == False:
 
             return redirect(url_for("index"))
 
@@ -609,13 +698,13 @@ def prompt():
     if request.form["attendance"] == "出勤":
 
         sql2 = """SELECT * FROM attendance WHERE usr_nm=?;"""
-        cur.execute(sql2, [session["username"]])
+        cur.execute(sql2, [session["user-name"]])
 
         for row in cur.fetchall():
             if row[3] == "UNDECIDED":
 
                 flash("出勤日時は既に記録されています")
-                return render_template("prompt.html", user_name=session["username"])
+                return render_template("prompt.html", user_name=session["user-name"])
 
         for row in cur.fetchall():
             row_num = row_num + 1
@@ -625,8 +714,12 @@ def prompt():
             sql3 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
             crrnt_tm_in_asa_tky = datetime.datetime.now(
                 pytz.timezone("Asia/Tokyo"))
-            cur.execute(sql3, (session["username"],
-                        crrnt_tm_in_asa_tky, "UNDECIDED"))
+
+            frmttd_crrnt_tm = crrnt_tm_in_asa_tky.strftime(
+                '%Y/%m/%d %H:%M:%S')
+
+            cur.execute(sql3, (session["user-name"],
+                        frmttd_crrnt_tm, "UNDECIDED"))
             conn.commit()
 
             cur.close()
@@ -634,12 +727,12 @@ def prompt():
 
             flash("出勤日時を記録しました")
 
-            return render_template("prompt.html", user_name=session["username"])
+            return render_template("prompt.html", user_name=session["user-name"])
 
     if request.form["attendance"] == "退勤":
 
         sql4 = """SELECT * FROM attendance WHERE usr_nm=?;"""
-        cur.execute(sql4, [session["username"]])
+        cur.execute(sql4, [session["user-name"]])
 
         for row in cur.fetchall():
 
@@ -651,7 +744,11 @@ def prompt():
             sql5 = """UPDATE attendance SET end_dttm=? WHERE id=?;"""
             crrnt_tm_in_asa_tky = datetime.datetime.now(
                 pytz.timezone("Asia/Tokyo"))
-            cur.execute(sql5, (crrnt_tm_in_asa_tky, row_id))
+
+            frmttd_crrnt_tm = crrnt_tm_in_asa_tky.strftime(
+                '%Y/%m/%d %H:%M:%S')
+
+            cur.execute(sql5, (frmttd_crrnt_tm, row_id))
             conn.commit()
 
             cur.close()
@@ -659,13 +756,13 @@ def prompt():
 
             flash("退勤日時を記録しました")
 
-            return render_template("prompt.html", user_name=session["username"])
+            return render_template("prompt.html", user_name=session["user-name"])
 
         else:
 
             flash("出勤日時が記録されていません")
 
-            return render_template("prompt.html", user_name=session["username"])
+            return render_template("prompt.html", user_name=session["user-name"])
 
 
 # 「admin_prompt」のURLエンドポイントを定義する
@@ -674,22 +771,28 @@ def admin_prompt():
 
     if request.method == "GET":
 
-        if "is_admin" not in session:
+        if "is-admin" not in session:
 
             return redirect(url_for("admin_login"))
 
-        elif session["is_admin"] == False:
+        elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
 
         return render_template("admin_prompt.html")
 
 
-def main():
+# 当該モジュールの終了時にリソース回りの後始末をする
+def cleanup():
     session.clear()
+
+    try:
+        os.remove(DOWNLOAD_PATH)
+    except FileNotFoundError:
+        pass
 
 
 # 当該モジュールが実行起点かどうかを確認した上でFlask本体を起動する
 if __name__ == '__main__':
-
     app.run(debug=True, host="localhost", port=5000)
+    sys.exit(cleanup())
