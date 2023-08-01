@@ -3,7 +3,6 @@
 
 # 既成のモジュールをインポートする
 import os
-import sys
 import flask
 import sqlite3
 import datetime
@@ -34,7 +33,35 @@ def index():
 
     session.clear()
 
+    if request.method == "GET":
+
+        return render_template("index.html")
+
     if request.method == "POST":
+
+        if "ERASED" == request.form["user-name"]:
+
+            flash("そのユーザーは登録されていません")
+
+            return render_template("index.html")
+
+        if "ERASED" == request.form["pass-word"]:
+
+            flash("そのパスワードは登録されていません")
+
+            return render_template("index.html")
+
+        if "UNDECIDED" == request.form["user-name"]:
+
+            flash("そのユーザーは登録されていません")
+
+            return render_template("index.html")
+
+        if "UNDECIDED" == request.form["pass-word"]:
+
+            flash("そのパスワードは登録されていません")
+
+            return render_template("index.html")
 
         conn = sqlite3.connect("app_usrs.db")
         cur = conn.cursor()
@@ -66,7 +93,7 @@ def index():
                 cur.close()
                 conn.close()
 
-                flash("そのパスワードは間違っています")
+                flash("そのパスワードは登録されていません")
 
                 return render_template("index.html")
 
@@ -75,13 +102,9 @@ def index():
 
         session["user-name"] = request.form["user-name"]
         session["is-logged-in"] = True
-        app.permanent_session_lifetime = timedelta(minutes=30)
+        app.permanent_session_lifetime = timedelta(minutes=10)
 
         return redirect(url_for("prompt"))
-
-    else:
-
-        return render_template("index.html")
 
 
 # 「modify_user」のURLエンドポイントを定義する
@@ -115,7 +138,7 @@ def modify_user():
         for row in cur.fetchall():
             itms.append(row)
 
-        return render_template("modify_user.html", usr_info=itms)
+        return render_template("modify_user.html", user_info=itms)
 
     if request.method == "POST":
 
@@ -126,6 +149,26 @@ def modify_user():
         elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
+
+        if "ERASED" == request.form["user-name"]:
+            flash("そのユーザーは登録できません")
+
+            return render_template("modify_user.html")
+
+        if "ERASED" == request.form["pass-word"]:
+            flash("そのパスワードは登録できません")
+
+            return render_template("modify_user.html")
+
+        if "UNDECIDED" == request.form["user-name"]:
+            flash("そのユーザーは登録できません")
+
+            return render_template("modify_user.html")
+
+        if "UNDECIDED" == request.form["pass-word"]:
+            flash("そのパスワードは登録できません")
+
+            return render_template("modify_user.html")
 
         conn = sqlite3.connect("app_usrs.db")
         cur = conn.cursor()
@@ -141,13 +184,12 @@ def modify_user():
         for row in cur.fetchall():
             row_num = row_num + 1
 
-        if row_num > 0:
+        if row_num != 0:
+            flash("そのユーザーは既に登録されています")
             cur.close()
             conn.close()
 
-            flash("そのユーザーは既に登録されています")
-
-            return render_template("modify_user.html")
+            return render_template("modify_user.html", recent_id=session["item-number"])
 
         sql3 = """UPDATE users SET usr_nm=?, psswrd=? WHERE id=?;"""
         cur.execute(
@@ -159,7 +201,7 @@ def modify_user():
 
         flash("そのユーザー情報を修正しました")
 
-        return render_template("modify_user.html")
+        return render_template("modify_user.html", recent_id=session["item-number"])
 
 
 # 「register_user」のURLエンドポイントを定義する
@@ -201,6 +243,27 @@ def register_user():
 
         if "ERASED" == request.form["user-name"]:
             flash("そのユーザーは登録できません")
+            cur.close()
+            conn.close()
+
+            return render_template("register_user.html")
+
+        if "ERASED" == request.form["pass-word"]:
+            flash("そのパスワードは登録できません")
+            cur.close()
+            conn.close()
+
+            return render_template("register_user.html")
+
+        if "UNDECIDED" == request.form["user-name"]:
+            flash("そのユーザーは登録できません")
+            cur.close()
+            conn.close()
+
+            return render_template("register_user.html")
+
+        if "UNDECIDED" == request.form["pass-word"]:
+            flash("そのパスワードは登録できません")
             cur.close()
             conn.close()
 
@@ -302,12 +365,12 @@ def admin_login():
 
         if ADMIN_PASS_WORD != request.form["pass-word"]:
 
-            flash("そのパスワードは間違っています")
+            flash("そのパスワードは登録されていません")
 
             return render_template("admin_login.html")
 
         session["is-admin"] = True
-        app.permanent_session_lifetime = timedelta(minutes=30)
+        app.permanent_session_lifetime = timedelta(minutes=10)
 
         return redirect(url_for("admin_prompt"))
 
@@ -466,6 +529,42 @@ def modify_attendance():
 
             return redirect(url_for("admin_login"))
 
+        if request.form["user-name"] == "ERASED":
+
+            flash("そのユーザーは登録できません")
+
+            return render_template("modify_attendance.html")
+
+        if request.form["begin-datetime"] == "ERASED":
+
+            flash("その出勤日時は登録できません")
+
+            return render_template("modify_attendance.html")
+
+        if request.form["end-datetime"] == "ERASED":
+
+            flash("その退勤日時は登録できません")
+
+            return render_template("modify_attendance.html")
+
+        if request.form["user-name"] == "UNDECIDED":
+
+            flash("そのユーザーは登録できません")
+
+            return render_template("modify_attendance.html")
+
+        if request.form["begin-datetime"] == "UNDECIDED":
+
+            flash("その出勤日時は登録できません")
+
+            return render_template("modify_attendance.html")
+
+        if request.form["end-datetime"] == "UNDECIDED":
+
+            flash("その退勤日時は登録できません")
+
+            return render_template("modify_attendance.html")
+
         conn = sqlite3.connect("app_tmm.db")
         cur = conn.cursor()
 
@@ -484,7 +583,7 @@ def modify_attendance():
 
         flash("勤怠情報を修正しました")
 
-        return render_template("modify_attendance.html")
+        return render_template("modify_attendance.html", recent_id=session["item-number"])
 
 
 # 「register_attendance」のURLエンドポイントを定義する
@@ -512,6 +611,40 @@ def register_attendance():
         elif session["is-admin"] == False:
 
             return redirect(url_for("admin_login"))
+
+        if request.form["user-name"] == "ERASED":
+
+            flash("そのユーザーは登録できません")
+
+            return render_template("register_attendance.html")
+
+        if request.form["begin-datetime"] == "ERASED":
+
+            flash("その出勤日時は登録できません")
+
+            return render_template("register_attendance.html")
+
+        if request.form["end-datetime"] == "ERASED":
+
+            flash("その退勤日時は登録できません")
+
+            return render_template("register_attendance.html")
+
+        if request.form["user-name"] == "UNDECIDED":
+
+            flash("そのユーザーは登録できません")
+
+        if request.form["begin-datetime"] == "UNDECIDED":
+
+            flash("その出勤日時は登録できません")
+
+            return render_template("register_attendance.html")
+
+        if request.form["end-datetime"] == "UNDECIDED":
+
+            flash("その退勤日時は登録できません")
+
+            return render_template("register_attendance.html")
 
         conn = sqlite3.connect("app_tmm.db")
         cur = conn.cursor()
@@ -644,6 +777,7 @@ def export_to_csv():
 # 「download」のURLエンドポイントを定義する
 @app.route("/download", methods=["GET"])
 def download():
+
     if request.method == "GET":
 
         if "is-admin" not in session:
@@ -706,28 +840,21 @@ def prompt():
                 flash("出勤日時は既に記録されています")
                 return render_template("prompt.html", user_name=session["user-name"])
 
-        for row in cur.fetchall():
-            row_num = row_num + 1
+        sql3 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
+        crrnt_tm_in_asa_tky = datetime.datetime.now(
+            pytz.timezone("Asia/Tokyo"))
 
-        if row_num == 0:
+        frmttd_crrnt_tm = crrnt_tm_in_asa_tky.strftime('%Y/%m/%d %H:%M:%S')
 
-            sql3 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
-            crrnt_tm_in_asa_tky = datetime.datetime.now(
-                pytz.timezone("Asia/Tokyo"))
+        cur.execute(sql3, (session["user-name"], frmttd_crrnt_tm, "UNDECIDED"))
+        conn.commit()
 
-            frmttd_crrnt_tm = crrnt_tm_in_asa_tky.strftime(
-                '%Y/%m/%d %H:%M:%S')
+        cur.close()
+        conn.close()
 
-            cur.execute(sql3, (session["user-name"],
-                        frmttd_crrnt_tm, "UNDECIDED"))
-            conn.commit()
+        flash("出勤日時を記録しました")
 
-            cur.close()
-            conn.close()
-
-            flash("出勤日時を記録しました")
-
-            return render_template("prompt.html", user_name=session["user-name"])
+        return render_template("prompt.html", user_name=session["user-name"])
 
     if request.form["attendance"] == "退勤":
 
@@ -735,12 +862,18 @@ def prompt():
         cur.execute(sql4, [session["user-name"]])
 
         for row in cur.fetchall():
-
             if row[3] == "UNDECIDED":
                 row_num = row_num + 1
                 row_id = row[0]
 
+        if row_num == 0:
+
+            flash("出勤日時が記録されていません")
+
+            return render_template("prompt.html", user_name=session["user-name"])
+
         if row_num != 0:
+
             sql5 = """UPDATE attendance SET end_dttm=? WHERE id=?;"""
             crrnt_tm_in_asa_tky = datetime.datetime.now(
                 pytz.timezone("Asia/Tokyo"))
@@ -755,12 +888,6 @@ def prompt():
             conn.close()
 
             flash("退勤日時を記録しました")
-
-            return render_template("prompt.html", user_name=session["user-name"])
-
-        else:
-
-            flash("出勤日時が記録されていません")
 
             return render_template("prompt.html", user_name=session["user-name"])
 
@@ -782,17 +909,6 @@ def admin_prompt():
         return render_template("admin_prompt.html")
 
 
-# 当該モジュールの終了時にリソース回りの後始末をする
-def cleanup():
-    session.clear()
-
-    try:
-        os.remove(DOWNLOAD_PATH)
-    except FileNotFoundError:
-        pass
-
-
 # 当該モジュールが実行起点かどうかを確認した上でFlask本体を起動する
 if __name__ == '__main__':
     app.run(debug=True, host="localhost", port=5000)
-    sys.exit(cleanup())

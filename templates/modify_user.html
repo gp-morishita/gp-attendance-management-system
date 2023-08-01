@@ -29,7 +29,8 @@
 </div>
 </nav>
 </header>
-{% for item in usr_info %}
+{% if user_info %}
+{% for item in user_info %}
 <div class="login-form">
 <form method="post">
 <h2 class="text-center">ユーザー修正</h2>
@@ -37,10 +38,10 @@
 <h2 class="text-center">ID: {{item[0]}}</h2>
 </div>
 <div class="form-group">
-<input name="username" type="text" class="form-control" placeholder="ユーザー名" required="required" value="{{item[1]}}">
+<input name="user-name" type="text" class="form-control" placeholder="ユーザー名" required="required" value="{{item[1]}}">
 </div>
 <div class="form-group">
-<input  name="password" type="text" class="form-control" placeholder="パスワード" required="required" value="{{item[2]}}">
+<input name="pass-word" type="password" class="form-control" placeholder="パスワード" required="required" value="{{item[2]}}">
 </div>
 <div class="form-group">
 <button type="submit" class="btn btn-primary btn-block">決定</button>
@@ -48,6 +49,25 @@
 </form>
 </div>
 {% endfor %}
+{% elif recent_id %}
+<div class="login-form">
+<form method="post">
+<h2 class="text-center">ユーザー修正</h2>
+<div class="form-group">
+<h2 class="text-center">ID: {{recent_id}}</h2>
+</div>
+<div class="form-group">
+<input name="user-name" type="text" class="form-control" placeholder="ユーザー名" required="required" value="">
+</div>
+<div class="form-group">
+<input name="pass-word" type="password" class="form-control" placeholder="パスワード" required="required" value="">
+</div>
+<div class="form-group">
+<button type="submit" class="btn btn-primary btn-block">決定</button>
+</div>
+</form>
+</div>
+{% endif %}
 <br>
 <br>
 {% with messages = get_flashed_messages() %}
