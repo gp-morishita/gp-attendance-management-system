@@ -6,10 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 <meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
 <title>gp-attendance-management-system</title>
-<link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/bootstrap.css')}}">
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/sticky-footer.css')}}">
+<link rel="shortcut icon" type="image/x-icon" href="{{url_for("static", filename="favicon.ico")}}">
+<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="styles.css")}}">
+<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/bootstrap.css")}}">
+<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/sticky-footer.css")}}">
 </head>
 <body style="background-color:gray;">
 <header class="header">
@@ -22,20 +22,39 @@
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
-<a class="nav-link" href="{{url_for('index')}}">ログアウト</a>
+<a class="nav-link" href="{{url_for('admin_login')}}">ログアウト</a>
 </li>
 </ul>
 </div>
 </nav>
 </header>
-<div class="login-form">
-<form>
-<h2 class="text-center">CSVのエクスポート</h2>
+<div class="login-form ">
+<form method="post" enctype="multipart/form-data">
+<h2 class="text-center">CSVのインポート</h2>
 <div class="form-group" align="center">
-<a class="btn btn-primary" href="{{url_for('download')}}">エクスポート</a>
+<div class="upload-file-name">ファイルが未選択です</div>
+</div>
+<div class="form-group" align="center">
+<input id="upload-file" name="upload-file" class="upload-file" type="file" accept=".csv" required="required" style="display:none"/>
+<label for="upload-file"><font color="blue">CSVファイルの選択</font></label>
+</div>
+<div class="form-group" align="center">
+<label class="file-name-clear"><font color="blue">選択ファイルをクリア</font></label>
+</div>
+<div class="form-group">
+<button type="submit" class="btn btn-primary btn-block">インポート</button>
+</div>
 </form>
 </div>
-</div>
+<br>
+<br>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p class="flash_message_text">{{message}}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <br>
 <br>
 <a class="btn btn-primary" href="{{url_for('admin_prompt')}}">前の画面に戻る</a>
@@ -52,6 +71,22 @@
 var btn=$('.footer');
 $(window).scroll(function(){if ($(this).scrollTop() > 80){btn.fadeIn();} else {btn.fadeOut();}});
 btn.click(function(){$('body,html').animate({scrollTop: 0},500); return false;});
+</script>
+<script type="text/javascript">
+$(function() {
+$('.upload-file').on('change',function(){
+var file = $(this).prop('files')[0];
+var alt_fl_nm
+if (file.name.length > 32) {alt_fl_nm=file.name.substr(0,32)+'...';}else{alt_fl_nm=file.name;}
+$('.upload-file-name').text(alt_fl_nm);
+});
+});
+</script>
+<script type="text/javascript">
+$('.file-name-clear').click(function() {
+$('.upload-file').val('');
+$('.upload-file-name').text('ファイルが未選択です');
+});
 </script>
 </body>
 </html>

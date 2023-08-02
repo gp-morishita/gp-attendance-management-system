@@ -62,3 +62,12 @@ br {
     padding: 24px;
     border-radius: 16px;
 }
+
+.hidden {
+    display: none;
+}
+
+/* .form-group>input {
+    overflow-wrap: normal;
+    font-size: 10px;
+} */
