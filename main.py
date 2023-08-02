@@ -63,7 +63,7 @@ def index():
 
             return render_template("index.html")
 
-        conn = sqlite3.connect("app_usrs.db")
+        conn = sqlite3.connect("app_usrm.db")
         cur = conn.cursor()
 
         sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -123,7 +123,7 @@ def modify_user():
 
             return redirect(url_for("admin_login"))
 
-        conn = sqlite3.connect("app_usrs.db")
+        conn = sqlite3.connect("app_usrm.db")
         cur = conn.cursor()
 
         sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -170,7 +170,7 @@ def modify_user():
 
             return render_template("modify_user.html")
 
-        conn = sqlite3.connect("app_usrs.db")
+        conn = sqlite3.connect("app_usrm.db")
         cur = conn.cursor()
 
         sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -230,7 +230,7 @@ def register_user():
 
             return redirect(url_for("admin_login"))
 
-        conn = sqlite3.connect("app_usrs.db")
+        conn = sqlite3.connect("app_usrm.db")
         cur = conn.cursor()
 
         sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -317,7 +317,7 @@ def erasure_user():
 
             return redirect(url_for("admin_login"))
 
-        conn = sqlite3.connect("app_usrs.db")
+        conn = sqlite3.connect("app_usrm.db")
         cur = conn.cursor()
 
         sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -390,7 +390,7 @@ def show_users():
 
             return redirect(url_for("admin_login"))
 
-        conn = sqlite3.connect("app_usrs.db")
+        conn = sqlite3.connect("app_usrm.db")
         cur = conn.cursor()
 
         sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
