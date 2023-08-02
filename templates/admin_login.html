@@ -6,10 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 <meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
 <title>gp-attendance-management-system</title>
-<link rel="shortcut icon" type="image/x-icon" href="{{url_for("static", filename="favicon.ico")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="styles.css")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/bootstrap.css")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/sticky-footer.css")}}">
+<link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/bootstrap.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/sticky-footer.css')}}">
 </head>
 <body background="{{url_for('static', filename='background-image.jpg')}}">
 <header class="header">
@@ -38,7 +38,7 @@
 <input name="pass-word" type="password" class="form-control" placeholder="パスワード" required="required">
 </div>
 <div class="form-group">
-<button type="submit" class="btn btn-primary btn-block">決定</button>
+<button type="submit" class="btn btn-primary btn-block">ログイン</button>
 </div>
 </form>
 </div>

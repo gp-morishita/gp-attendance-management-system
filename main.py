@@ -3,6 +3,7 @@
 
 # 既成のモジュールをインポートする
 import os
+import re
 import flask
 import sqlite3
 import csv
@@ -15,8 +16,11 @@ from flask_paginate import Pagination, get_page_parameter
 # 管理者用パスワードを宣言する
 ADMIN_PASS_WORD = "gp1192"
 
-# ダウンロードファイルのパスを宣言する
-DOWNLOAD_PATH = "cache_data/export_attendance.csv"
+# インポートするCSVファイルの場所を宣言する
+IMPORT_PATH = "./cache_data"
+
+# エクスポートするCSVファイルの場所を宣言する
+EXPORT_PATH = "cache_data/export_attendance.csv"
 
 # Flask本体を構築する
 app = flask.Flask(__name__, static_folder="static",
@@ -730,7 +734,7 @@ def erasure_attendance():
 # 「import_from_csv」のURLエンドポイントを定義する
 @app.route("/import_from_csv", methods=["GET", "POST"])
 def import_from_csv():
-    spr_itms = []
+    itms = []
 
     if request.method == "GET":
 
@@ -743,84 +747,6 @@ def import_from_csv():
             return redirect(url_for("admin_login"))
 
         return render_template("import_from_csv.html")
-
-        # conn = sqlite3.connect("app_tmm.db")
-        # cur = conn.cursor()
-
-        # sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-        #                                              usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
-        # cur.execute(sql1)
-        # conn.commit()
-
-        # sql2 = """SELECT * FROM attendance;"""
-        # cur.execute(sql2)
-
-        # for row in cur.fetchall():
-        #     buf = str(row[0]) + ", " + row[1] + ", " + \
-        #         row[2] + ", " + row[3] + "\n"
-        #     spr_itms.append(buf)
-
-        # cur.close()
-        # conn.close()
-
-        # fl = open(DOWNLOAD_PATH, "x", encoding="UTF-8")
-
-        # fl.writelines(spr_itms)
-
-        # fl.close()
-
-
-# #test.dbを作成し、接続（すでに存在する場合は接続のみ）
-# con = sqlite3.connect(“test.db”)
-# cur = con.cursor()
-
-# #testテーブルを作成（IF NOT EXISTSは「存在しなければ作成する」という意味）
-# create_test = “CREATE TABLE IF NOT EXISTS test (id INTEGER, name TEXT, height INTEGER, weight INTEGER)”
-# cur.execute(create_test)
-
-# #testテーブルのデータを削除（何回もコード実行すると同じデータ追加されるので）
-# delete_test = “DELETE FROM TEST”
-# cur.execute(delete_test)
-
-# #csvファイルの指定
-# open_csv = open(“test.csv”)
-
-# #csvファイルを読み込む
-# read_csv = csv.reader(open_csv)
-
-# #next()関数を用いて最初の行(列名)はスキップさせる
-# next_row = next(read_csv)
-
-# #csvデータをINSERTする
-# rows = []
-# for row in read_csv:
-#     rows.append(row)
-
-# #executemany()で複数のINSERTを実行する
-# cur.executemany(
-#     “INSERT INTO test (id, name, height, weight) VALUES (?, ?, ?, ?)”, rows)
-
-# #テーブルの変更内容保存
-# #csvも閉じておきましょう
-# con.commit()
-# open_csv.close()
-
-# #testテーブルの確認
-# select_test = “SELECT * FROM test”
-
-# print(“—————————-“)
-# print(“fetchall”)
-# print(“—————————-“)
-# print(cur.execute(select_test))
-# print(cur.fetchall())
-# print(“—————————-“)
-# print(“for文”)
-# print(“—————————-“)
-# for i in cur.execute(select_test):
-#     print(i)
-
-# #データベースの接続終了
-# con.close
 
     if request.method == "POST":
 
@@ -832,18 +758,44 @@ def import_from_csv():
 
             return redirect(url_for("admin_login"))
 
+        conn = sqlite3.connect("app_tmm.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
         csv_file = request.files["upload-file"]
         csv_file.save(os.path.join("./cache_data", csv_file.filename))
 
-        flash("CSVファイルを保存しました")
+        open_csv = open(os.path.join(
+            "./cache_data", csv_file.filename), "r", encoding="UTF-8")
+        read_csv = csv.reader(open_csv)
+
+        sql2 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
+
+        for row in read_csv:
+            itms.append(row)
+
+        cur.executemany(sql2, itms)
+
+        conn.commit()
+
+        cur.close()
+        conn.close()
+
+        open_csv.close()
+
+        flash("CSVファイルをインポートしました")
 
         return render_template("import_from_csv.html")
 
 
 # 「export_to_csv」のURLエンドポイントを定義する
-@app.route("/export_to_csv", methods=["GET"])
+@app.route("/export_to_csv", methods=["GET", "POST"])
 def export_to_csv():
-    spr_itms = []
+    itms = []
 
     if request.method == "GET":
 
@@ -855,8 +807,12 @@ def export_to_csv():
 
             return redirect(url_for("admin_login"))
 
+        return render_template("export_to_csv.html")
+
+    if request.method == "POST":
+
         try:
-            os.remove(DOWNLOAD_PATH)
+            os.remove(EXPORT_PATH)
         except FileNotFoundError:
             pass
 
@@ -872,37 +828,22 @@ def export_to_csv():
         cur.execute(sql2)
 
         for row in cur.fetchall():
-            buf = str(row[0]) + ", " + row[1] + ", " + \
+            buf = row[1] + ", " + \
                 row[2] + ", " + row[3] + "\n"
-            spr_itms.append(buf)
+            itms.append(buf)
 
         cur.close()
         conn.close()
 
-        fl = open(DOWNLOAD_PATH, "x", encoding="UTF-8")
+        fl = open(EXPORT_PATH, "x", encoding="UTF-8")
 
-        fl.writelines(spr_itms)
+        fl.writelines(itms)
 
         fl.close()
 
-        return render_template("export_to_csv.html")
+        flash("CSVファイルをエクスポートしました")
 
-
-# 「download」のURLエンドポイントを定義する
-@app.route("/download", methods=["GET"])
-def download():
-
-    if request.method == "GET":
-
-        if "is-admin" not in session:
-
-            return redirect(url_for("admin_login"))
-
-        elif session["is-admin"] == False:
-
-            return redirect(url_for("admin_login"))
-
-    return send_file(DOWNLOAD_PATH, as_attachment=True)
+        return send_file(EXPORT_PATH, as_attachment=True)
 
 
 # 「prompt」のURLエンドポイントを定義する

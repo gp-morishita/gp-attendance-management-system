@@ -6,10 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 <meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
 <title>gp-attendance-management-system</title>
-<link rel="shortcut icon" type="image/x-icon" href="{{url_for("static", filename="favicon.ico")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="styles.css")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/bootstrap.css")}}">
-<link rel="stylesheet" type="text/css" href="{{url_for("static", filename="bootstrap(popper_bundled)/css/sticky-footer.css")}}">
+<link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/bootstrap.css')}}">
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/sticky-footer.css')}}">
 </head>
 <body style="background-color:gray;">
 <header class="header">
@@ -28,18 +28,18 @@
 </div>
 </nav>
 </header>
-<div class="login-form ">
+<div class="login-form" align="center">
 <form method="post" enctype="multipart/form-data">
 <h2 class="text-center">CSVのインポート</h2>
-<div class="form-group" align="center">
+<div class="form-group">
 <div class="upload-file-name">ファイルが未選択です</div>
 </div>
-<div class="form-group" align="center">
+<div class="form-group">
 <input id="upload-file" name="upload-file" class="upload-file" type="file" accept=".csv" required="required" style="display:none"/>
 <label for="upload-file"><font color="blue">CSVファイルの選択</font></label>
 </div>
-<div class="form-group" align="center">
-<label class="file-name-clear"><font color="blue">選択ファイルをクリア</font></label>
+<div class="form-group">
+<label class="file-name-clear"><font color="blue">ファイル選択のクリア</font></label>
 </div>
 <div class="form-group">
 <button type="submit" class="btn btn-primary btn-block">インポート</button>
