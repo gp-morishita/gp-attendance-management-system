@@ -3,8 +3,10 @@
 
 # 既成のモジュールをインポートする
 import os
+import re
 import flask
 import sqlite3
+import csv
 import datetime
 import pytz
 from datetime import timedelta
@@ -14,8 +16,11 @@ from flask_paginate import Pagination, get_page_parameter
 # 管理者用パスワードを宣言する
 ADMIN_PASS_WORD = "gp1192"
 
-# ダウンロードファイルのパスを宣言する
-DOWNLOAD_PATH = "cache_data/export_attendance.csv"
+# インポートするCSVファイルの場所を宣言する
+IMPORT_PATH = "./cache_data"
+
+# エクスポートするCSVファイルの場所を宣言する
+EXPORT_PATH = "cache_data/export_attendance.csv"
 
 # Flask本体を構築する
 app = flask.Flask(__name__, static_folder="static",
@@ -726,10 +731,10 @@ def erasure_attendance():
         return render_template("erasure_attendance.html")
 
 
-# 「export_to_csv」のURLエンドポイントを定義する
-@app.route("/export_to_csv", methods=["GET"])
-def export_to_csv():
-    spr_itms = []
+# 「import_from_csv」のURLエンドポイントを定義する
+@app.route("/import_from_csv", methods=["GET", "POST"])
+def import_from_csv():
+    itms = []
 
     if request.method == "GET":
 
@@ -741,8 +746,79 @@ def export_to_csv():
 
             return redirect(url_for("admin_login"))
 
+        return render_template("import_from_csv.html")
+
+    if request.method == "POST":
+
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        conn = sqlite3.connect("app_tmm.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS attendance (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, bgn_dttm TEXT NOT NULL, end_dttm TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
+        csv_file = request.files["upload-file"]
+        csv_file.save(os.path.join("./cache_data", csv_file.filename))
+
+        open_csv = open(os.path.join(
+            "./cache_data", csv_file.filename), "r", encoding="UTF-8")
+        read_csv = csv.reader(open_csv)
+
+        sql2 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
+
+        for row in read_csv:
+            itms.append(row)
+
         try:
-            os.remove(DOWNLOAD_PATH)
+
+            cur.executemany(sql2, itms)
+            conn.commit()
+
+        except sqlite3.ProgrammingError:
+
+            flash("CSVファイル内のデータの列数が一致しません")
+            return render_template("import_from_csv.html")
+
+        cur.close()
+        conn.close()
+
+        open_csv.close()
+
+        flash("CSVファイルをインポートしました")
+
+        return render_template("import_from_csv.html")
+
+
+# 「export_to_csv」のURLエンドポイントを定義する
+@app.route("/export_to_csv", methods=["GET", "POST"])
+def export_to_csv():
+    itms = []
+
+    if request.method == "GET":
+
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        return render_template("export_to_csv.html")
+
+    if request.method == "POST":
+
+        try:
+            os.remove(EXPORT_PATH)
         except FileNotFoundError:
             pass
 
@@ -758,37 +834,22 @@ def export_to_csv():
         cur.execute(sql2)
 
         for row in cur.fetchall():
-            buf = str(row[0]) + ", " + row[1] + ", " + \
+            buf = row[1] + ", " + \
                 row[2] + ", " + row[3] + "\n"
-            spr_itms.append(buf)
+            itms.append(buf)
 
         cur.close()
         conn.close()
 
-        fl = open(DOWNLOAD_PATH, "x", encoding="UTF-8")
+        fl = open(EXPORT_PATH, "x", encoding="UTF-8")
 
-        fl.writelines(spr_itms)
+        fl.writelines(itms)
 
         fl.close()
 
-        return render_template("export_to_csv.html")
+        flash("CSVファイルをエクスポートしました")
 
-
-# 「download」のURLエンドポイントを定義する
-@app.route("/download", methods=["GET"])
-def download():
-
-    if request.method == "GET":
-
-        if "is-admin" not in session:
-
-            return redirect(url_for("admin_login"))
-
-        elif session["is-admin"] == False:
-
-            return redirect(url_for("admin_login"))
-
-    return send_file(DOWNLOAD_PATH, as_attachment=True)
+        return send_file(EXPORT_PATH, as_attachment=True)
 
 
 # 「prompt」のURLエンドポイントを定義する

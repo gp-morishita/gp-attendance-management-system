@@ -28,17 +28,17 @@
 </div>
 </nav>
 </header>
-<br>
-<br>
-<h3>こちらからダウンロードしてください</h3>
-<p> <a href="{{url_for('download')}}">CSVファイルをダウンロード</a></p>
-<br>
-<br>
+<div class="login-form">
+<form method="post">
+<h2 class="text-center">CSVのエクスポート</h2>
+<div class="form-group">
+<button type="submit" class="btn btn-primary btn-block">エクスポート</button>
+</div>
+</form>
+</div>
 <br>
 <br>
 <a class="btn btn-primary" href="{{url_for('admin_prompt')}}">前の画面に戻る</a>
-<br>
-<br>
 <br>
 <br>
 <footer class="footer">
