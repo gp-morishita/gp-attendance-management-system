@@ -778,9 +778,15 @@ def import_from_csv():
         for row in read_csv:
             itms.append(row)
 
-        cur.executemany(sql2, itms)
+        try:
 
-        conn.commit()
+            cur.executemany(sql2, itms)
+            conn.commit()
+
+        except sqlite3.ProgrammingError:
+
+            flash("CSVファイル内のデータの列数が一致しません")
+            return render_template("import_from_csv.html")
 
         cur.close()
         conn.close()
