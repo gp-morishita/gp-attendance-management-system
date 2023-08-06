@@ -32,13 +32,15 @@
 <form method="post">
 <h2 class="text-center">打刻抹消</h2>
 <div class="form-group">
-<input name="id" type="text" class="form-control" placeholder="ID" required="required">
+<h4 class="text-center">打刻ID: {{user_id}}</h4>
 </div>
 <div class="form-group">
 <button type="submit" class="btn btn-primary btn-block">決定</button>
 </div>
 </form>
 </div>
+<br>
+<br>
 <br>
 <br>
 {% with messages = get_flashed_messages() %}

@@ -35,10 +35,10 @@
 <input name="user-name" type="text" class="form-control" placeholder="ユーザー名" required="required" value="">
 </div>
 <div class="form-group">
-<input name="begin-datetime" type="text" class="form-control" placeholder="出勤日時" required="required" value="">
+<input name="begin-datetime" type="datetime-local" class="form-control" placeholder="出勤日時" required="required" value="">
 </div>
 <div class="form-group">
-<input name="end-datetime" type="text" class="form-control" placeholder="退勤日時" required="required" value="">
+<input name="end-datetime" type="datetime-local" class="form-control" placeholder="退勤日時" required="required" value="">
 </div>
 <div class="form-group">
 <button type="submit" class="btn btn-primary btn-block">決定</button>
@@ -57,6 +57,7 @@
 <br>
 <br>
 <a class="btn btn-primary" href="{{url_for('show_attendance')}}">前の画面に戻る</a>
+<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">管理者TOPに戻る</a>
 <br>
 <br>
 <footer class="footer">
