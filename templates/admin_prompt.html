@@ -34,7 +34,7 @@
 <a class="nav-link" href="{{url_for('export_to_csv')}}">CSV書出し</a>
 </li>
 <li class="nav-item">
-<a class="nav-link" href="{{url_for('admin_login')}}">集計分析</a>
+<a class="nav-link" href="{{url_for('aggregate_analysis')}}">集計分析</a>
 </li>
 <li class="nav-item">
 <a class="nav-link" href="{{url_for('admin_login')}}">ログアウト</a>
@@ -45,7 +45,7 @@
 </header>
 <br>
 <br>
-<p class="prompt_message_text">ようこそ&nbsp;&nbsp;&nbsp;&nbsp;管理者さん.</p>
+<p class="prompt_message_text">ようこそ&nbsp;&nbsp;&nbsp;&nbsp;管理さん.</p>
 <br>
 <br>
 <div class="login-form">
@@ -77,24 +77,24 @@ let now = new Date();
 let year = now.getFullYear();
 let month = now.getMonth() + 1;
 let date = now.getDate();
-let day_arr = ['日', '月', '火', '水', '木', '金', '土']
+let day_arr = ['日','月','火','水','木','金','土']
 let day = day_arr[now.getDay()];
-document.getElementById("current-date").innerHTML  = year + '年' + month + '月' + date + '日' + '（' + day + '）';
+document.getElementById("current-date").innerHTML=year+'年'+month+'月'+date+'日'+'（'+day+'）';
 </script>
 <script type="text/javascript">
 function set2fig(num) {
 var ret;
-if( num < 10 ) { ret = "0" + num; }
-else { ret = num; }
+if(num<10) {ret="0"+num;}
+else {ret=num;}
 return ret;
 }
 function showClock2() {
-var nowTime = new Date();
-var nowHour = set2fig( nowTime.getHours() );
-var nowMin  = set2fig( nowTime.getMinutes() );
-var nowSec  = set2fig( nowTime.getSeconds() );
-var msg = nowHour + ":" + nowMin + ":" + nowSec;
-document.getElementById("RealtimeClockArea2").innerHTML = msg;
+var nowTime=new Date();
+var nowHour=set2fig(nowTime.getHours());
+var nowMin=set2fig(nowTime.getMinutes());
+var nowSec=set2fig(nowTime.getSeconds());
+var msg=nowHour+':'+nowMin+':'+nowSec;
+document.getElementById('RealtimeClockArea2').innerHTML=msg;
 }
 setInterval('showClock2()',1000);
 </script>

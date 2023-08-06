@@ -99,13 +99,13 @@ def modify_user():
     usr_id_shrt = ""
     row_num = 0
 
-    usr_id_lngth = len(str(session["modify-item-number"]))
+    usr_id_lngth = len(str(session["modify-item-id"]))
 
     if usr_id_lngth > 4:
-        usr_id_shrt = str(session["modify-item-number"])[0:4] + "..."
+        usr_id_shrt = str(session["modify-item-id"])[0:4] + "..."
 
     else:
-        usr_id_shrt = str(session["modify-item-number"])
+        usr_id_shrt = str(session["modify-item-id"])
 
     if request.method == "GET":
 
@@ -125,7 +125,7 @@ def modify_user():
 
         sql2 = """SELECT * FROM users WHERE id=?;"""
 
-        cur.execute(sql2, [session["modify-item-number"]])
+        cur.execute(sql2, [session["modify-item-id"]])
 
         for row in cur:
             itms.append(row)
@@ -225,12 +225,12 @@ def modify_user():
         for row in cur:
             if (row[1] == "----------------" and row[2] == "--------"):
                 flash("そのユーザーは既に抹消されています")
-                return render_template("modify_user.html.html", user_id=usr_id_shrt)
+                return render_template("modify_user.html", user_id=usr_id_shrt)
 
             row_num = row_num + 1
 
         if row_num != 0:
-            flash("そのユーザー名は既に登録されています", user_id=usr_id_shrt)
+            flash("そのユーザー名は既に登録されています")
             cur.close()
             conn.close()
 
@@ -238,7 +238,7 @@ def modify_user():
 
         sql3 = """UPDATE users SET usr_nm=?, psswrd=? WHERE id=?;"""
         cur.execute(
-            sql3, (request.form["user-name"], request.form["pass-word"], session["modify-item-number"]))
+            sql3, (request.form["user-name"], request.form["pass-word"], session["modify-item-id"]))
         conn.commit()
 
         cur.close()
@@ -448,13 +448,13 @@ def erasure_user2():
     usr_id_shrt = ""
     row_num = 0
 
-    usr_id_lngth = len(str(session["erasure-item-number"]))
+    usr_id_lngth = len(str(session["erasure-item-id"]))
 
     if usr_id_lngth > 4:
-        usr_id_shrt = str(session["erasure-item-number"])[0:4] + "..."
+        usr_id_shrt = str(session["erasure-item-id"])[0:4] + "..."
 
     else:
-        usr_id_shrt = str(session["erasure-item-number"])
+        usr_id_shrt = str(session["erasure-item-id"])
 
     if request.method == "GET":
 
@@ -485,7 +485,7 @@ def erasure_user2():
         conn.commit()
 
         sql2 = """SELECT * FROM users WHERE id=?;"""
-        cur.execute(sql2, [session["erasure-item-number"]])
+        cur.execute(sql2, [session["erasure-item-id"]])
 
         for row in cur:
             if (row[1] == "----------------" and row[2] == "--------"):
@@ -503,7 +503,7 @@ def erasure_user2():
             return render_template("erasure_user2.html", user_id=usr_id_shrt)
 
         sql1 = """UPDATE users SET usr_nm="----------------", psswrd="--------" WHERE id=?;"""
-        cur.execute(sql1, [session["erasure-item-number"]])
+        cur.execute(sql1, [session["erasure-item-id"]])
         conn.commit()
 
         cur.close()
@@ -588,13 +588,13 @@ def show_users():
 
             return redirect(url_for("admin_login"))
 
-        session["modify-item-number"] = request.form["hidden-modify-item-number"]
-        session["erasure-item-number"] = request.form["hidden-erasure-item-number"]
+        session["modify-item-id"] = request.form["hidden-modify-item-id"]
+        session["erasure-item-id"] = request.form["hidden-erasure-item-id"]
 
-        if session["modify-item-number"] != "none":
+        if session["modify-item-id"] != "none":
             return redirect(url_for("modify_user"))
 
-        elif session["erasure-item-number"] != "none":
+        elif session["erasure-item-id"] != "none":
             return redirect(url_for("erasure_user2"))
 
 
@@ -648,13 +648,13 @@ def show_attendance():
 
             return redirect(url_for("admin_login"))
 
-        session["modify-item-number"] = request.form["hidden-modify-item-number"]
-        session["erasure-item-number"] = request.form["hidden-erasure-item-number"]
+        session["modify-item-id"] = request.form["hidden-modify-item-id"]
+        session["erasure-item-id"] = request.form["hidden-erasure-item-id"]
 
-        if session["modify-item-number"] != "none":
+        if session["modify-item-id"] != "none":
             return redirect(url_for("modify_attendance"))
 
-        elif session["erasure-item-number"] != "none":
+        elif session["erasure-item-id"] != "none":
             return redirect(url_for("erasure_attendance2"))
 
 
@@ -665,13 +665,13 @@ def modify_attendance():
     itms2 = []
     attndnc_id_shrt = ""
 
-    attndnc_id_lngth = len(str(session["modify-item-number"]))
+    attndnc_id_lngth = len(str(session["modify-item-id"]))
 
     if attndnc_id_lngth > 4:
-        attndnc_id_shrt = str(session["modify-item-number"])[0:4] + "..."
+        attndnc_id_shrt = str(session["modify-item-id"])[0:4] + "..."
 
     else:
-        attndnc_id_shrt = str(session["modify-item-number"])
+        attndnc_id_shrt = str(session["modify-item-id"])
 
     if request.method == "GET":
 
@@ -692,7 +692,7 @@ def modify_attendance():
         conn.commit()
 
         sql2 = """SELECT * FROM attendance WHERE id=?;"""
-        cur.execute(sql2, [session["modify-item-number"]])
+        cur.execute(sql2, [session["modify-item-id"]])
 
         for row in cur:
             itms1.append(row)
@@ -768,7 +768,7 @@ def modify_attendance():
 
         sql2 = """UPDATE attendance SET usr_nm=?, bgn_dttm=?, end_dttm=? WHERE id=?;"""
         cur.execute(sql2, (request.form["user-name"], rqst_bgn_dttm_frmttd3,
-                    rqst_end_dttm_frmttd3, session["modify-item-number"]))
+                    rqst_end_dttm_frmttd3, session["modify-item-id"]))
         conn.commit()
 
         cur.close()
@@ -946,13 +946,13 @@ def erasure_attendance2():
     usr_id_shrt = ""
     row_num = 0
 
-    usr_id_lngth = len(str(session["erasure-item-number"]))
+    usr_id_lngth = len(str(session["erasure-item-id"]))
 
     if usr_id_lngth > 4:
-        usr_id_shrt = str(session["erasure-item-number"])[0:4] + "..."
+        usr_id_shrt = str(session["erasure-item-id"])[0:4] + "..."
 
     else:
-        usr_id_shrt = str(session["erasure-item-number"])
+        usr_id_shrt = str(session["erasure-item-id"])
 
     if request.method == "GET":
 
@@ -985,7 +985,7 @@ def erasure_attendance2():
         conn.commit()
 
         sql2 = """SELECT * FROM attendance WHERE id=?;"""
-        cur.execute(sql2, [session["erasure-item-number"]])
+        cur.execute(sql2, [session["erasure-item-id"]])
 
         for row in cur:
             if (row[1] == "----------------" or row[2] == "--/--/-- --:--" or row[3] == "--/--/-- --:--"):
@@ -999,7 +999,7 @@ def erasure_attendance2():
             return render_template("erasure_attendance2.html", user_id=usr_id_shrt)
 
         sql3 = """UPDATE attendance SET usr_nm="----------------", bgn_dttm="--/--/-- --:--", end_dttm="--/--/-- --:--" WHERE id=?;"""
-        cur.execute(sql3, [session["erasure-item-number"]])
+        cur.execute(sql3, [session["erasure-item-id"]])
         conn.commit()
 
         cur.close()
@@ -1222,9 +1222,8 @@ def export_to_csv():
 # 「prompt」のURLエンドポイントを定義する
 @app.route("/prompt", methods=["GET", "POST"])
 def prompt():
-    # past_bgn_dttm = ""
-    prsnt_bgn_dttm_hr = 0
-    prsnt_end_dttm_hr = 0
+    crrnt_bgn_dttm_hr = 0
+    crrnt_end_dttm_hr = 0
     row_num = 0
     row_id = 0
 
@@ -1271,26 +1270,26 @@ def prompt():
                 flash("出勤日時は既に記録されています")
                 return render_template("prompt.html", user_name=session["user-name"])
 
-        prsnt_bgn_dttm = datetime.datetime.now(
+        crrnt_bgn_dttm = datetime.datetime.now(
             pytz.timezone("Asia/Tokyo"))
 
-        if (prsnt_bgn_dttm.minute >= 0 and prsnt_bgn_dttm.minute <= 29):
-            prsnt_bgn_dttm_min = 30
-            prsnt_bgn_dttm_hr = prsnt_bgn_dttm.hour
+        if (crrnt_bgn_dttm.minute >= 0 and crrnt_bgn_dttm.minute <= 29):
+            crrnt_bgn_dttm_min = 30
+            crrnt_bgn_dttm_hr = crrnt_bgn_dttm.hour
 
-        elif (prsnt_bgn_dttm.minute >= 30 and prsnt_bgn_dttm.minute <= 59):
-            prsnt_bgn_dttm_min = 0
-            prsnt_bgn_dttm_hr = prsnt_bgn_dttm.hour + 1
+        elif (crrnt_bgn_dttm.minute >= 30 and crrnt_bgn_dttm.minute <= 59):
+            crrnt_bgn_dttm_min = 0
+            crrnt_bgn_dttm_hr = crrnt_bgn_dttm.hour + 1
 
-        bgn_dttm_amndd = prsnt_bgn_dttm.replace(
-            hour=prsnt_bgn_dttm_hr, minute=prsnt_bgn_dttm_min, second=0, microsecond=0)
+        bgn_dttm_amndd = crrnt_bgn_dttm.replace(
+            hour=crrnt_bgn_dttm_hr, minute=crrnt_bgn_dttm_min, second=0, microsecond=0)
 
-        prsnt_bgn_dttm_frmttd = datetime.datetime.strftime(
+        crrnt_bgn_dttm_frmttd = datetime.datetime.strftime(
             bgn_dttm_amndd, "%Y/%m/%d %H:%M")
 
         sql2 = """INSERT INTO attendance (usr_nm, bgn_dttm, end_dttm) VALUES (?, ?, ?);"""
         cur.execute(
-            sql2, (session["user-name"], prsnt_bgn_dttm_frmttd, "--/--/-- --:--"))
+            sql2, (session["user-name"], crrnt_bgn_dttm_frmttd, "--/--/-- --:--"))
         conn.commit()
 
         cur.close()
@@ -1318,26 +1317,26 @@ def prompt():
 
         if row_num != 0:
 
-            prsnt_end_dttm = datetime.datetime.now(
+            crrnt_end_dttm = datetime.datetime.now(
                 pytz.timezone("Asia/Tokyo"))
 
-            if (prsnt_end_dttm.minute >= 0 and prsnt_end_dttm.minute <= 29):
-                prsnt_end_dttm_min = 30
-                prsnt_end_dttm_hr = prsnt_end_dttm.hour
+            if (crrnt_end_dttm.minute >= 0 and crrnt_end_dttm.minute <= 29):
+                crrnt_end_dttm_min = 30
+                crrnt_end_dttm_hr = crrnt_end_dttm.hour
 
-            elif (prsnt_end_dttm.minute >= 30 and prsnt_end_dttm.minute <= 59):
-                prsnt_end_dttm_min = 0
-                prsnt_end_dttm_hr = prsnt_end_dttm.hour + 1
+            elif (crrnt_end_dttm.minute >= 30 and crrnt_end_dttm.minute <= 59):
+                crrnt_end_dttm_min = 0
+                crrnt_end_dttm_hr = crrnt_end_dttm.hour + 1
 
-            end_dttm_amndd = prsnt_end_dttm.replace(
-                hour=prsnt_end_dttm_hr, minute=prsnt_end_dttm_min, second=0, microsecond=0)
+            end_dttm_amndd = crrnt_end_dttm.replace(
+                hour=crrnt_end_dttm_hr, minute=crrnt_end_dttm_min, second=0, microsecond=0)
 
-            prsnt_end_dttm_frmttd = datetime.datetime.strftime(
+            crrnt_end_dttm_frmttd = datetime.datetime.strftime(
                 end_dttm_amndd, "%Y/%m/%d %H:%M")
 
             sql5 = """UPDATE attendance SET end_dttm=? WHERE id=?;"""
             cur.execute(
-                sql5, (prsnt_end_dttm_frmttd, row_id))
+                sql5, (crrnt_end_dttm_frmttd, row_id))
             conn.commit()
 
             cur.close()
@@ -1366,8 +1365,12 @@ def admin_prompt():
 
 
 # 「search_users」のURLエンドポイントを定義する
-@app.route("/search_users", methods=["GET"])
+@app.route("/search_users", methods=["GET", "POST"])
 def search_users():
+    itms0 = []
+    itms1 = []
+    itms2 = []
+    row_num = 0
 
     if request.method == "GET":
 
@@ -1379,11 +1382,132 @@ def search_users():
 
             return redirect(url_for("admin_login"))
 
-        return render_template("search_users.html")
+        per_pg = 40
+        pg = request.args.get(get_page_parameter(), type=int, default=1)
+        pg_dat = itms0[(pg - 1) * per_pg: pg * per_pg]
+        pgntn = Pagination(page=pg, total=len(
+            itms0), per_page=per_pg, css_framework="bootstrap4")
+
+        return render_template("search_users.html", page_data=pg_dat, pagination=pgntn)
+
+    if request.method == "POST":
+
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        conn = sqlite3.connect("app_usrm.db")
+        cur = conn.cursor()
+
+        sql1 = """CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                                     usr_nm TEXT NOT NULL, psswrd TEXT NOT NULL);"""
+        cur.execute(sql1)
+        conn.commit()
+
+        if request.form["user-id"] is not None:
+
+            sql2 = """SELECT * FROM users WHERE id=?;"""
+            cur.execute(sql2, [request.form["user-id"]])
+
+            for row in cur:
+                if (row[1] == "----------------" and row[2] == "--------"):
+                    per_pg = 40
+                    pg = request.args.get(
+                        get_page_parameter(), type=int, default=1)
+                    pg_dat = itms0[(pg - 1) * per_pg: pg * per_pg]
+                    pgntn = Pagination(page=pg, total=len(
+                        itms0), per_page=per_pg, css_framework="bootstrap4")
+                    cur.close()
+                    conn.close()
+
+                    flash("そのユーザーは既に抹消されています")
+                    return render_template("search_users.html", page_data=pg_dat, pagination=pgntn)
+
+            itms2.append(row)
+            row_num = row_num + 1
+
+            if row_num == 0:
+                per_pg = 40
+                pg = request.args.get(
+                    get_page_parameter(), type=int, default=1)
+                pg_dat = itms0[(pg - 1) * per_pg: pg * per_pg]
+                pgntn = Pagination(page=pg, total=len(
+                    itms0), per_page=per_pg, css_framework="bootstrap4")
+
+                cur.close()
+                conn.close()
+
+                flash("検索の結果, 該当する情報は1件もありませんでした")
+                return render_template("search_users.html", page_data=pg_dat, pagination=pgntn)
+
+            per_pg = 40
+            pg = request.args.get(get_page_parameter(), type=int, default=1)
+            pg_dat = itms2[(pg - 1) * per_pg: pg * per_pg]
+            pgntn = Pagination(page=pg, total=len(
+                itms2), per_page=per_pg, css_framework="bootstrap4")
+
+            cur.close()
+            conn.close()
+
+            flash("ユーザーを検索しました, " + "該当する情報が「" + str(row_num) + "」件ありました")
+
+            return render_template("search_users.html", page_data=pg_dat, pagination=pgntn)
+
+        if request.form["user-name"] is not None:
+
+            sql3 = """SELECT * FROM users WHERE usr_nm=?;"""
+            cur.execute(sql3, [request.form["user-name"]])
+
+        for row in cur:
+            if (row[1] == "----------------" and row[2] == "--------"):
+                per_pg = 40
+                pg = request.args.get(
+                    get_page_parameter(), type=int, default=1)
+                pg_dat = itms0[(pg - 1) * per_pg: pg * per_pg]
+                pgntn = Pagination(page=pg, total=len(
+                    itms0), per_page=per_pg, css_framework="bootstrap4")
+                cur.close()
+                conn.close()
+
+                flash("そのユーザーは既に抹消されています")
+                return render_template("search_users.html", page_data=pg_dat, pagination=pgntn)
+
+            itms2.append(row)
+            row_num = row_num + 1
+
+        if row_num == 0:
+            per_pg = 40
+            pg = request.args.get(get_page_parameter(), type=int, default=1)
+            pg_dat = itms0[(pg - 1) * per_pg: pg * per_pg]
+            pgntn = Pagination(page=pg, total=len(
+                itms0), per_page=per_pg, css_framework="bootstrap4")
+
+            cur.close()
+            conn.close()
+
+            flash("検索の結果, 該当する情報は1件もありませんでした")
+            return render_template("search_users.html", page_data=pg_dat, pagination=pgntn)
+
+        per_pg = 40
+        pg = request.args.get(get_page_parameter(), type=int, default=1)
+        pg_dat = itms2[(pg - 1) * per_pg: pg * per_pg]
+        pgntn = Pagination(page=pg, total=len(
+            itms2), per_page=per_pg, css_framework="bootstrap4")
+
+        cur.close()
+        conn.close()
+
+        flash("ユーザーを検索しました, " + "該当する情報が「" + str(row_num) + "」件ありました")
+
+        return render_template("search_users.html", page_data=pg_dat, pagination=pgntn)
 
 
 # 「search_attendance」のURLエンドポイントを定義する
-@app.route("/search_attendance", methods=["GET"])
+@app.route("/search_attendance", methods=["GET", "POST"])
 def search_attendance():
 
     if request.method == "GET":
@@ -1397,6 +1521,23 @@ def search_attendance():
             return redirect(url_for("admin_login"))
 
         return render_template("search_attendance.html")
+
+
+# 「aggregate_analysis」のURLエンドポイントを定義する
+@app.route("/aggregate_analysis", methods=["GET", "POST"])
+def aggregate_analysis():
+
+    if request.method == "GET":
+
+        if "is-admin" not in session:
+
+            return redirect(url_for("admin_login"))
+
+        elif session["is-admin"] == False:
+
+            return redirect(url_for("admin_login"))
+
+        return render_template("aggregate_analysis.html")
 
 
 # 当該モジュールが実行起点かどうかを確認した上でFlask本体を起動する

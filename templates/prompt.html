@@ -72,24 +72,24 @@ let now = new Date();
 let year = now.getFullYear();
 let month = now.getMonth() + 1;
 let date = now.getDate();
-let day_arr = ['日', '月', '火', '水', '木', '金', '土']
+let day_arr = ['日','月','火','水','木','金','土']
 let day = day_arr[now.getDay()];
-document.getElementById("current-date").innerHTML  = year + '年' + month + '月' + date + '日' + '（' + day + '）';
+document.getElementById("current-date").innerHTML=year+'年'+month+'月'+date+'日'+'（'+day+'）';
 </script>
 <script type="text/javascript">
 function set2fig(num) {
 var ret;
-if( num < 10 ) { ret = "0" + num; }
-else { ret = num; }
+if(num<10) {ret="0"+num;}
+else {ret=num;}
 return ret;
 }
 function showClock2() {
-var nowTime = new Date();
-var nowHour = set2fig( nowTime.getHours() );
-var nowMin  = set2fig( nowTime.getMinutes() );
-var nowSec  = set2fig( nowTime.getSeconds() );
-var msg = nowHour + ":" + nowMin + ":" + nowSec;
-document.getElementById("RealtimeClockArea2").innerHTML = msg;
+var nowTime=new Date();
+var nowHour=set2fig(nowTime.getHours());
+var nowMin=set2fig(nowTime.getMinutes());
+var nowSec=set2fig(nowTime.getSeconds());
+var msg=nowHour+':'+nowMin+':'+nowSec;
+document.getElementById('RealtimeClockArea2').innerHTML=msg;
 }
 setInterval('showClock2()',1000);
 </script>

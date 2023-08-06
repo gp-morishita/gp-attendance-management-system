@@ -23,7 +23,22 @@
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
-<a class="nav-link" href="{{url_for('index')}}">ログアウト</a>
+<a class="nav-link" href="{{url_for('show_users')}}">ユーザー管理</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('show_attendance')}}">打刻管理</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('import_from_csv')}}">CSV取込み</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('export_to_csv')}}">CSV書出し</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('aggregate_analysis')}}">集計分析</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('admin_login')}}">ログアウト</a>
 </li>
 </ul>
 </div>
@@ -46,16 +61,16 @@
 <td>{{item[0]}}</td>
 <td>{{item[1]}}</td>
 <td>{{item[2]}}</td>
-<td><input id="modify-item-number" name="modify-item-number"
+<td><input id="modify-item-id" name="modify-item-id"
 type="submit" class="btn btn-primary btn-block" value="修正"
-onclick="document.getElementById('hidden-modify-item-number').value='{{item[0]}}';"/></td>
-<td><input id="erasure-item-number" name="erasure-item-number"
+onclick="document.getElementById('hidden-modify-item-id').value='{{item[0]}}';"/></td>
+<td><input id="erasure-item-id" name="erasure-item-id"
 type="submit" class="btn btn-primary btn-block" value="抹消"
-onclick="document.getElementById('hidden-erasure-item-number').value='{{item[0]}}';"/></td>
+onclick="document.getElementById('hidden-erasure-item-id').value='{{item[0]}}';"/></td>
 </tr>
 {% endfor %}
-<input id="hidden-modify-item-number" name="hidden-modify-item-number" type="hidden" value="none"></input>
-<input id="hidden-erasure-item-number" name="hidden-erasure-item-number" type="hidden" value="none"></input>
+<input id="hidden-modify-item-id" name="hidden-modify-item-id" type="hidden" value="none"></input>
+<input id="hidden-erasure-item-id" name="hidden-erasure-item-id" type="hidden" value="none"></input>
 </form>
 </tbody>
 </table>
@@ -64,10 +79,10 @@ onclick="document.getElementById('hidden-erasure-item-number').value='{{item[0]}
 <br>
 <br>
 <br>
-<a class="btn btn-primary" href="{{url_for('search_users')}}">ユーザー検索する</a>
-<a class="btn btn-primary" href="{{url_for('register_user')}}">ユーザー登録する</a>
-<a class="btn btn-primary" href="{{url_for('erasure_user')}}">ユーザー抹消する</a>
-<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">前の画面に戻る</a>
+<a class="btn btn-primary" href="{{url_for('search_users')}}">ユーザー検索</a>
+<a class="btn btn-primary" href="{{url_for('register_user')}}">ユーザー登録</a>
+<a class="btn btn-primary" href="{{url_for('erasure_user')}}">ユーザー抹消</a>
+<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">管理TOP</a>
 <br>
 <br>
 <br>

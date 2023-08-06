@@ -22,6 +22,21 @@
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
+<a class="nav-link" href="{{url_for('show_users')}}">ユーザー管理</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('show_attendance')}}">打刻管理</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('import_from_csv')}}">CSV取込み</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('export_to_csv')}}">CSV書出し</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('aggregate_analysis')}}">集計分析</a>
+</li>
+<li class="nav-item">
 <a class="nav-link" href="{{url_for('admin_login')}}">ログアウト</a>
 </li>
 </ul>
@@ -57,7 +72,7 @@
 {% endwith %}
 <br>
 <br>
-<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">前の画面に戻る</a>
+<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">管理TOP</a>
 <br>
 <br>
 <footer class="footer">

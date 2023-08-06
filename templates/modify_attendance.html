@@ -22,7 +22,22 @@
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
-<a class="nav-link" href="{{url_for('index')}}">ログアウト</a>
+<a class="nav-link" href="{{url_for('show_users')}}">ユーザー管理</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('show_attendance')}}">打刻管理</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('import_from_csv')}}">CSV取込み</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('export_to_csv')}}">CSV書出し</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('aggregate_analysis')}}">集計分析</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('admin_login')}}">ログアウト</a>
 </li>
 </ul>
 </div>
@@ -80,8 +95,9 @@
 {% endfor %}
 {% endif %}
 {% endwith %}
-<a class="btn btn-primary" href="{{url_for('show_attendance')}}">前の画面に戻る</a>
-<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">管理者TOPに戻る</a>
+<a class="btn btn-primary" href="{{url_for('search_attendance')}}">打刻検索</a>
+<a class="btn btn-primary" href="{{url_for('show_attendance')}}">打刻一覧</a>
+<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">管理TOP</a>
 <footer class="footer">
 <div class="container text-center">
 <p class="text-muted">Copyright &copy; 2023  GIFT-PLACE  All rights reserved.</p>
