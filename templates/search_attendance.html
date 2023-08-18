@@ -3,12 +3,11 @@
 <html lang="ja">
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="gift-placeによる勤怠管理システムです。">
 <title>gp-attendance-management-system</title>
 <link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
 <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.css">
 <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/bootstrap.css')}}">
 <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap(popper_bundled)/css/sticky-footer.css')}}">
 </head>
@@ -44,47 +43,86 @@
 </div>
 </nav>
 </header>
-<table class="table">
-<thead>
-<tr>
-<th scope="col1">ユーザーID</th>
-<th scope="col1">ユーザー名</th>
-<th scope="col1">パスワード</th>
-<th scope="col1">項目操作1</th>
-<th scope="col1">項目操作2</th>
-</tr>
-</thead>
-<tbody>
 <form method="post">
-{% for item in page_data %}
-<tr style="background-color:white;">
-<td>{{item[0]}}</td>
-<td>{{item[1]}}</td>
-<td>{{item[2]}}</td>
-<td><input id="modify-item-id" name="modify-item-id"
-type="submit" class="btn btn-primary btn-block" value="修正"
-onclick="document.getElementById('hidden-modify-item-id').value='{{item[0]}}';"/></td>
-<td><input id="erasure-item-id" name="erasure-item-id"
-type="submit" class="btn btn-primary btn-block" value="抹消"
-onclick="document.getElementById('hidden-erasure-item-id').value='{{item[0]}}';"/></td>
+<table class="table">
+<thead></thead>
+<tbody>
+<tr>
+<td><input name="search-user-ids" type="text" class="form-control" placeholder="ユーザーID" value=""></td>
+<td><input name="search-user-names" type="text" class="form-control" placeholder="ユーザー名" value=""></td>
+<td><input name="search-begin-datetime" type="datetime-local" class="form-control" placeholder="検索範囲の始め" value=""></td>
+<td><input name="search-end-datetime" type="datetime-local" class="form-control" placeholder="検索範囲の終わり" value=""></td>
+<td><button type="submit" class="btn btn-primary btn-block">決定</button></td>
 </tr>
-{% endfor %}
-<input id="hidden-modify-item-id" name="hidden-modify-item-id" type="hidden" value="none"></input>
-<input id="hidden-erasure-item-id" name="hidden-erasure-item-id" type="hidden" value="none"></input>
-</form>
 </tbody>
 </table>
+<table class="table">
+<thead></thead>
+<tbody>  
+<tr>
+<td>
+<div id="sort-conditions" class="form-control">
+<fieldset>
+<legend>並べ替えの条件:</legend>
+<div>
+<input type="radio" id="sort-conditions1" name="sort-conditions" value="sort-conditions1" checked />
+<label for="sort-conditions1">日付順(古いものを先に)</label>
+</div>  
+<div>
+<input type="radio" id="sort-conditions2" name="sort-conditions" value="sort-conditions2" />
+<label for="sort-conditions2">日付順(新しいものを先に)</label>
+</div>
+</fieldset>
+</div>
+</td>
+<td>
+<div id="extract-conditions" class="form-control">
+<fieldset>
+<legend>ユーザーごとの抽出の条件:</legend>
+<div>
+<input type="radio" id="extract-conditions1" name="extract-conditions" value="extract-conditions1" checked />
+<label for="extract-conditions1">入力されたもののみを対象にする</label>
+</div>
+<div>
+<input type="radio" id="extract-conditions2" name="extract-conditions" value="extract-conditions2" />
+<label for="extract-conditions2">入力されたものを除外対象にする</label>
+</div>
+</fieldset>
+</div>
+</td>
+<td>
+<div id="handling-of-non-attendance" class="form-control">
+<fieldset>
+<legend>未退勤についての条件:</legend>
+<div>
+<input type="radio" id="handling-of-non-attendance1" name="handling-of-non-attendance" value="handling-of-non-attendance1" checked />
+<label for="handling-of-non-attendance1">未退勤も対象にする</label>
+</div>
+<div>
+<input type="radio" id="handling-of-non-attendance2" name="handling-of-non-attendance" value="handling-of-non-attendance2" />
+<label for="handling-of-non-attendance2">未退勤は除外対象にする</label>
+</div>
+</fieldset>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</form>
 <br>
 <br>
-{{pagination.links}}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p class="flash_message_text">{{message}}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <br>
 <br>
-<a class="btn btn-primary" href="{{url_for('search_users')}}">ユーザー検索</a>
-<a class="btn btn-primary" href="{{url_for('register_user')}}">ユーザー登録</a>
+<a class="btn btn-primary" href="{{url_for('show_attendance')}}">打刻一覧</a>
+<a class="btn btn-primary" href="{{url_for('register_attendance')}}">打刻登録</a>
 <a class="btn btn-primary" href="{{url_for('admin_prompt')}}">管理TOP</a>
-<br>
-<br>
-<div style="background-color:white;">{{pagination.info}}</div>
 <br>
 <br>
 <footer class="footer">

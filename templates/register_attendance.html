@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="GIFT-PLACEの勤怠管理システムです。">
+<meta name="description" content="gift-placeによる勤怠管理システムです。">
 <title>gp-attendance-management-system</title>
 <link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
 <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}">
@@ -14,7 +14,7 @@
 <body style="background-color:gray;">
 <header class="header">
 <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
-<img src="{{url_for('static', filename='logo.jpg')}}" width="32" hight="32">
+<img src="{{url_for('static', filename='logo.png')}}" width="32" hight="32">
 <a class="navbar-brand" href="{{url_for('index')}}">&nbsp;&nbsp;&nbsp;&nbsp;gp-attendance-management-system</a>
 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav4" aria-controls="navbarNav4" aria-expanded="false" aria-label="Toggle navigation">
 <span class="navbar-toggler-icon"></span>
@@ -22,7 +22,22 @@
 <div class="collapse navbar-collapse justify-content-end" id="navbarNav4">
 <ul class="navbar-nav">
 <li class="nav-item">
-<a class="nav-link" href="{{url_for('index')}}">ログアウト</a>
+<a class="nav-link" href="{{url_for('show_users')}}">ユーザー管理</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('show_attendance')}}">打刻管理</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('import_from_csv')}}">CSV取込み</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('export_to_csv')}}">CSV書出し</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('reset_db')}}">DBリセット</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{{url_for('admin_login')}}">ログアウト</a>
 </li>
 </ul>
 </div>
@@ -32,13 +47,13 @@
 <form method="post">
 <h2 class="text-center">打刻登録</h2>
 <div class="form-group">
-<input name="user-name" type="text" class="form-control" placeholder="ユーザー名" required="required" value="">
+<input name="register-user-name" type="text" class="form-control" placeholder="ユーザー名" required="required" value="">
 </div>
 <div class="form-group">
-<input name="begin-datetime" type="text" class="form-control" placeholder="出勤日時" required="required" value="">
+<input name="register-begin-datetime" type="datetime-local" class="form-control" placeholder="出勤日時" required="required" value="">
 </div>
 <div class="form-group">
-<input name="end-datetime" type="text" class="form-control" placeholder="退勤日時" required="required" value="">
+<input name="register-end-datetime" type="datetime-local" class="form-control" placeholder="退勤日時" required="required" value="">
 </div>
 <div class="form-group">
 <button type="submit" class="btn btn-primary btn-block">決定</button>
@@ -56,12 +71,14 @@
 {% endwith %}
 <br>
 <br>
-<a class="btn btn-primary" href="{{url_for('show_attendance')}}">前の画面に戻る</a>
+<a class="btn btn-primary" href="{{url_for('search_attendance')}}">打刻検索</a>
+<a class="btn btn-primary" href="{{url_for('show_attendance')}}">打刻一覧</a>
+<a class="btn btn-primary" href="{{url_for('admin_prompt')}}">管理TOP</a>
 <br>
 <br>
 <footer class="footer">
 <div class="container text-center">
-<p class="text-muted">Copyright &copy; 2023  GIFT-PLACE  All rights reserved.</p>
+<p class="text-muted">Copyright &copy; 2023  gift-place  All rights reserved.</p>
 </div>
 </footer>
 <script type="text/javascript" src="{{url_for('static', filename='jquery/jquery-3.6.4.js')}}"></script>
